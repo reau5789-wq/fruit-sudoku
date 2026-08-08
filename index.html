@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>성령의 열매 스도쿠</title>
+<style>
+  :root {
+    --bg: #faf6ee;
+    --panel: #ffffff;
+    --line-thin: #d9cdb8;
+    --line-thick: #7a5c3e;
+    --text: #3a2e21;
+    --accent: #8a5a3b;
+    --accent-light: #f1e2c9;
+    --given: #5a4632;
+    --user: #8a5a3b;
+    --conflict: #d9534f;
+    --selected: #ffe9b3;
+    --peer: #fbf1de;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    background: linear-gradient(180deg, #fdf9f0, #f3e9d6);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 24px 12px 60px;
+    min-height: 100vh;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 560px;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-size: 22px;
+    margin: 0 0 6px;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+  header p {
+    margin: 0;
+    font-size: 13px;
+    color: #8a7c68;
+    line-height: 1.5;
+  }
+  .verse {
+    text-align: center;
+    font-size: 12.5px;
+    color: #a08a5f;
+    margin: 8px 0 18px;
+    font-style: italic;
+  }
+
+  .panel {
+    background: var(--panel);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 6px 24px rgba(122, 92, 62, 0.12);
+  }
+
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .difficulty {
+    display: flex;
+    gap: 6px;
+  }
+  .difficulty button, .new-game-btn {
+    border: 1px solid var(--line-thin);
+    background: var(--accent-light);
+    color: var(--accent);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .difficulty button.active {
+    background: var(--accent);
+    color: #fff;
+  }
+  .new-game-btn {
+    background: var(--accent);
+    color: #fff;
+  }
+  .status-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12.5px;
+    color: #8a7c68;
+    margin-bottom: 10px;
+  }
+  #timer { font-variant-numeric: tabular-nums; }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: repeat(9, 1fr);
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border: 3px solid var(--line-thick);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--line-thin);
+    gap: 1px;
+  }
+  .cell {
+    background: #fffdf8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    transition: background 0.15s;
+    padding: 1px 0;
+  }
+  .cell .emoji {
+    font-size: clamp(12px, 3vw, 19px);
+    line-height: 1;
+  }
+  .cell .fruit-name {
+    font-size: clamp(6.5px, 1.7vw, 9.5px);
+    line-height: 1;
+    color: var(--given);
+    letter-spacing: -0.3px;
+    white-space: nowrap;
+  }
+  .cell.given { background: #f5efe0; cursor: default; }
+  .cell.given .emoji { filter: none; }
+  .cell.given .fruit-name { font-weight: 700; color: var(--given); }
+  .cell.user .emoji { opacity: 0.95; }
+  .cell.user .fruit-name { color: var(--user); font-weight: 500; }
+  .cell.selected { background: var(--selected) !important; }
+  .cell.peer { background: var(--peer); }
+  .cell.conflict .emoji { filter: drop-shadow(0 0 0 var(--conflict)); }
+  .cell.conflict { background: #fbe3e1 !important; }
+  .cell.hint-pop { animation: pop 0.35s ease; }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+  }
+
+  /* thick borders every 3 columns/rows */
+  .cell[data-c="2"] { border-right: 2.5px solid var(--line-thick); }
+  .cell[data-c="5"] { border-right: 2.5px solid var(--line-thick); }
+  .cell[data-r="2"] { border-bottom: 2.5px solid var(--line-thick); }
+  .cell[data-r="5"] { border-bottom: 2.5px solid var(--line-thick); }
+
+  .palette {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 6px;
+    margin-top: 16px;
+  }
+  .fruit-btn {
+    background: var(--accent-light);
+    border: 1px solid var(--line-thin);
+    border-radius: 10px;
+    padding: 8px 2px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    font-size: 10px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .fruit-btn .emoji { font-size: 18px; }
+  .fruit-btn:active { transform: scale(0.94); }
+  .fruit-btn.erase {
+    background: #efe6d8;
+    color: #8a7c68;
+  }
+
+  .legend {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px 10px;
+    font-size: 11.5px;
+    color: #8a7c68;
+  }
+  .legend div { display: flex; align-items: center; gap: 5px; }
+  .legend .emoji { font-size: 14px; }
+
+  .win-banner {
+    display: none;
+    text-align: center;
+    margin-top: 14px;
+    padding: 14px;
+    background: #eef7ea;
+    border: 1px solid #b9dfae;
+    border-radius: 12px;
+    color: #3e6b30;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .win-banner.show { display: block; }
+
+  footer.note {
+    text-align: center;
+    font-size: 11px;
+    color: #b0a48c;
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🕊️ 성령의 열매 스도쿠</h1>
+    <p>숫자 대신 성령의 9가지 열매로 채우는 거룩한 스도쿠</p>
+  </header>
+  <div class="verse">"오직 성령의 열매는 사랑과 희락과 화평과 참음과 자비와 양선과 충성과 온유와 절제니" (갈 5:22-23)</div>
+
+  <div class="panel">
+    <div class="toolbar">
+      <div class="difficulty">
+        <button data-level="easy">쉬움</button>
+        <button data-level="medium" class="active">보통</button>
+        <button data-level="hard">어려움</button>
+      </div>
+      <button class="new-game-btn" id="newGameBtn">새 게임</button>
+    </div>
+    <div class="status-row">
+      <span id="progressText">0 / 81 채움</span>
+      <span id="timer">00:00</span>
+    </div>
+
+    <div class="board" id="board"></div>
+
+    <div class="palette" id="palette"></div>
+
+    <div class="win-banner" id="winBanner">
+      🎉 완성했습니다! 🎉<br>
+      "그의 안에 거하는 자마다 죄를 범하지 아니하나니" — 성령의 열매로 오늘도 채워가요.
+    </div>
+
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <footer class="note">각 가로줄·세로줄·3×3 칸에 9가지 열매가 한 번씩만 들어가야 해요.</footer>
+</div>
+
+<script>
+// ---- 성령의 9가지 열매 (갈 5:22-23) ----
+const FRUITS = [
+  { name: "사랑", emoji: "❤️" },
+  { name: "희락", emoji: "😊" },
+  { name: "화평", emoji: "🕊️" },
+  { name: "참음", emoji: "⏳" },
+  { name: "자비", emoji: "🤲" },
+  { name: "양선", emoji: "🌾" },
+  { name: "충성", emoji: "🛡️" },
+  { name: "온유", emoji: "🌿" },
+  { name: "절제", emoji: "⚖️" },
+];
+
+const DIFFICULTY = { easy: 36, medium: 46, hard: 54 }; // 지울 칸 수(빈칸 개수)
+
+let solution = [];      // 정답 9x9 (1-9)
+let puzzle = [];        // 현재 상태 9x9 (0 = 빈칸)
+let givenMask = [];     // 처음부터 제공된 칸 true/false
+let selected = null;    // {r,c}
+let timerInterval = null;
+let seconds = 0;
+let gameWon = false;
+
+// ---------- 스도쿠 생성 ----------
+function emptyGrid() {
+  return Array.from({length:9}, () => Array(9).fill(0));
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function isValid(grid, r, c, val) {
+  for (let i = 0; i < 9; i++) {
+    if (grid[r][i] === val) return false;
+    if (grid[i][c] === val) return false;
+  }
+  const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (grid[br+i][bc+j] === val) return false;
+    }
+  }
+  return true;
+}
+
+function fillGrid(grid) {
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (grid[r][c] === 0) {
+        const nums = shuffle([1,2,3,4,5,6,7,8,9]);
+        for (const n of nums) {
+          if (isValid(grid, r, c, n)) {
+            grid[r][c] = n;
+            if (fillGrid(grid)) return true;
+            grid[r][c] = 0;
+          }
+        }
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function countSolutions(grid, limit) {
+  // 백트래킹으로 해의 개수를 limit까지만 센다 (유일해 검증용)
+  let count = 0;
+  function solve(g) {
+    if (count >= limit) return;
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (g[r][c] === 0) {
+          for (let n = 1; n <= 9; n++) {
+            if (isValid(g, r, c, n)) {
+              g[r][c] = n;
+              solve(g);
+              g[r][c] = 0;
+              if (count >= limit) return;
+            }
+          }
+          return;
+        }
+      }
+    }
+    count++;
+  }
+  const copy = grid.map(row => row.slice());
+  solve(copy);
+  return count;
+}
+
+function generatePuzzle(removeCount) {
+  const full = emptyGrid();
+  fillGrid(full);
+  const p = full.map(row => row.slice());
+
+  const cells = [];
+  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) cells.push([r,c]);
+  shuffle(cells);
+
+  let removed = 0;
+  for (const [r,c] of cells) {
+    if (removed >= removeCount) break;
+    const backup = p[r][c];
+    p[r][c] = 0;
+    // 유일해 검증 (보드가 커서 비용이 크면 생략 가능하지만 성능 위해 제한적으로 체크)
+    const solCount = countSolutions(p, 2);
+    if (solCount !== 1) {
+      p[r][c] = backup; // 되돌림
+    } else {
+      removed++;
+    }
+  }
+  return { full, puzzle: p };
+}
+
+// ---------- 렌더링 ----------
+function buildBoardDOM() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      cell.addEventListener('click', () => selectCell(r, c));
+      board.appendChild(cell);
+    }
+  }
+}
+
+function buildPaletteDOM() {
+  const palette = document.getElementById('palette');
+  palette.innerHTML = '';
+  FRUITS.forEach((f, idx) => {
+    const btn = document.createElement('div');
+    btn.className = 'fruit-btn';
+    btn.innerHTML = `<span class="emoji">${f.emoji}</span><span>${f.name}</span>`;
+    btn.addEventListener('click', () => placeValue(idx + 1));
+    palette.appendChild(btn);
+  });
+  const erase = document.createElement('div');
+  erase.className = 'fruit-btn erase';
+  erase.innerHTML = `<span class="emoji">✖️</span><span>지우기</span>`;
+  erase.addEventListener('click', () => placeValue(0));
+  palette.appendChild(erase);
+}
+
+function buildLegendDOM() {
+  const legend = document.getElementById('legend');
+  legend.innerHTML = '';
+  FRUITS.forEach(f => {
+    const div = document.createElement('div');
+    div.innerHTML = `<span class="emoji">${f.emoji}</span><span>${f.name}</span>`;
+    legend.appendChild(div);
+  });
+}
+
+function renderBoard() {
+  const cellsEls = document.querySelectorAll('.cell');
+  cellsEls.forEach(el => {
+    const r = +el.dataset.r, c = +el.dataset.c;
+    const val = puzzle[r][c];
+    el.classList.remove('given','user','selected','peer','conflict');
+    el.innerHTML = '';
+    if (val !== 0) {
+      const f = FRUITS[val - 1];
+      const emojiSpan = document.createElement('span');
+      emojiSpan.className = 'emoji';
+      emojiSpan.textContent = f.emoji;
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'fruit-name';
+      nameSpan.textContent = f.name;
+      el.title = f.name;
+      el.appendChild(emojiSpan);
+      el.appendChild(nameSpan);
+      el.classList.add(givenMask[r][c] ? 'given' : 'user');
+    }
+  });
+  highlightSelection();
+  updateProgress();
+}
+
+function highlightSelection() {
+  const cellsEls = document.querySelectorAll('.cell');
+  cellsEls.forEach(el => el.classList.remove('selected','peer','conflict'));
+  if (!selected) return;
+  const { r: sr, c: sc } = selected;
+  cellsEls.forEach(el => {
+    const r = +el.dataset.r, c = +el.dataset.c;
+    if (r === sr && c === sc) {
+      el.classList.add('selected');
+    } else if (r === sr || c === sc ||
+      (Math.floor(r/3) === Math.floor(sr/3) && Math.floor(c/3) === Math.floor(sc/3))) {
+      el.classList.add('peer');
+    }
+  });
+  markConflicts();
+}
+
+function markConflicts() {
+  const cellsEls = document.querySelectorAll('.cell');
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const val = puzzle[r][c];
+      if (val === 0) continue;
+      puzzle[r][c] = 0;
+      const ok = isValid(puzzle, r, c, val);
+      puzzle[r][c] = val;
+      if (!ok) {
+        const el = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+        if (el) el.classList.add('conflict');
+      }
+    }
+  }
+}
+
+function updateProgress() {
+  let filled = 0;
+  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) if (puzzle[r][c] !== 0) filled++;
+  document.getElementById('progressText').textContent = `${filled} / 81 채움`;
+}
+
+// ---------- 상호작용 ----------
+function selectCell(r, c) {
+  if (gameWon) return;
+  if (givenMask[r][c]) {
+    selected = { r, c };
+    highlightSelection();
+    return;
+  }
+  selected = { r, c };
+  highlightSelection();
+}
+
+function placeValue(val) {
+  if (!selected || gameWon) return;
+  const { r, c } = selected;
+  if (givenMask[r][c]) return;
+  puzzle[r][c] = val;
+  renderBoard();
+  checkWin();
+}
+
+function checkWin() {
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (puzzle[r][c] === 0) return;
+      const val = puzzle[r][c];
+      puzzle[r][c] = 0;
+      const ok = isValid(puzzle, r, c, val);
+      puzzle[r][c] = val;
+      if (!ok) return;
+    }
+  }
+  gameWon = true;
+  clearInterval(timerInterval);
+  document.getElementById('winBanner').classList.add('show');
+}
+
+// ---------- 타이머 ----------
+function resetTimer() {
+  clearInterval(timerInterval);
+  seconds = 0;
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    seconds++;
+    updateTimerDisplay();
+  }, 1000);
+}
+function updateTimerDisplay() {
+  const m = String(Math.floor(seconds / 60)).padStart(2,'0');
+  const s = String(seconds % 60).padStart(2,'0');
+  document.getElementById('timer').textContent = `${m}:${s}`;
+}
+
+// ---------- 새 게임 ----------
+let currentLevel = 'medium';
+
+function newGame(level) {
+  currentLevel = level || currentLevel;
+  document.querySelectorAll('.difficulty button').forEach(b => {
+    b.classList.toggle('active', b.dataset.level === currentLevel);
+  });
+  gameWon = false;
+  selected = null;
+  document.getElementById('winBanner').classList.remove('show');
+
+  const removeCount = DIFFICULTY[currentLevel];
+  const { full, puzzle: p } = generatePuzzle(removeCount);
+  solution = full;
+  puzzle = p.map(row => row.slice());
+  givenMask = puzzle.map(row => row.map(v => v !== 0));
+
+  renderBoard();
+  resetTimer();
+}
+
+// ---------- 초기화 ----------
+document.getElementById('newGameBtn').addEventListener('click', () => newGame());
+document.querySelectorAll('.difficulty button').forEach(btn => {
+  btn.addEventListener('click', () => newGame(btn.dataset.level));
+});
+
+buildBoardDOM();
+buildPaletteDOM();
+buildLegendDOM();
+newGame('medium');
+</script>
+</body>
+</html>
