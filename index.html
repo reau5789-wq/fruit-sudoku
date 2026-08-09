@@ -104,9 +104,25 @@
     justify-content: space-between;
     font-size: 12.5px;
     color: #8a7c68;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    gap: 4px 10px;
   }
   #timer { font-variant-numeric: tabular-nums; }
+  .stat-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .best-row {
+    text-align: center;
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .best-row .no-record { color: #b0a48c; font-weight: 500; }
+  #mistakeText.warn { color: var(--conflict); font-weight: 700; }
 
   .board {
     display: grid;
@@ -192,6 +208,24 @@
     background: #efe6d8;
     color: #8a7c68;
   }
+  .fruit-btn.hint {
+    background: #fff2d6;
+    color: #b8862f;
+    border-color: #e6cf9a;
+  }
+  .action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .action-row .fruit-btn {
+    flex-direction: row;
+    justify-content: center;
+    padding: 9px 4px;
+    font-size: 12px;
+  }
+  .action-row .fruit-btn .emoji { font-size: 15px; margin-right: 4px; }
 
   .legend {
     margin-top: 16px;
@@ -243,18 +277,27 @@
       </div>
       <button class="new-game-btn" id="newGameBtn">새 게임</button>
     </div>
+    <div class="best-row" id="bestRow"></div>
+
     <div class="status-row">
       <span id="progressText">0 / 81 채움</span>
-      <span id="timer">00:00</span>
+      <div class="stat-group">
+        <span id="mistakeText">실수 0회</span>
+        <span id="hintText">힌트 0회</span>
+        <span id="timer">00:00</span>
+      </div>
     </div>
 
     <div class="board" id="board"></div>
 
     <div class="palette" id="palette"></div>
 
+    <div class="action-row" id="actionRow"></div>
+
     <div class="win-banner" id="winBanner">
       🎉 완성했습니다! 🎉<br>
       "그의 안에 거하는 자마다 죄를 범하지 아니하나니" — 성령의 열매로 오늘도 채워가요.
+      <div id="recordMsg" style="margin-top:8px; font-weight:700;"></div>
     </div>
 
     <div class="legend" id="legend"></div>
@@ -286,6 +329,33 @@ let selected = null;    // {r,c}
 let timerInterval = null;
 let seconds = 0;
 let gameWon = false;
+let mistakes = 0;
+let hintsUsed = 0;
+
+const BEST_KEY_PREFIX = 'fruitSudokuBest_';
+
+function getBestTime(level) {
+  const v = localStorage.getItem(BEST_KEY_PREFIX + level);
+  return v ? parseInt(v, 10) : null;
+}
+function setBestTime(level, secs) {
+  localStorage.setItem(BEST_KEY_PREFIX + level, String(secs));
+}
+function formatTime(secs) {
+  const m = String(Math.floor(secs / 60)).padStart(2,'0');
+  const s = String(secs % 60).padStart(2,'0');
+  return `${m}:${s}`;
+}
+function updateBestRow() {
+  const best = getBestTime(currentLevel);
+  const levelName = { easy:'쉬움', medium:'보통', hard:'어려움' }[currentLevel];
+  const el = document.getElementById('bestRow');
+  if (best) {
+    el.innerHTML = `🏆 ${levelName} 최고 기록: ${formatTime(best)}`;
+  } else {
+    el.innerHTML = `<span class="no-record">🏆 ${levelName} 최고 기록: 아직 없음</span>`;
+  }
+}
 
 // ---------- 스도쿠 생성 ----------
 function emptyGrid() {
@@ -411,11 +481,23 @@ function buildPaletteDOM() {
     btn.addEventListener('click', () => placeValue(idx + 1));
     palette.appendChild(btn);
   });
+}
+
+function buildActionRowDOM() {
+  const row = document.getElementById('actionRow');
+  row.innerHTML = '';
+
   const erase = document.createElement('div');
   erase.className = 'fruit-btn erase';
   erase.innerHTML = `<span class="emoji">✖️</span><span>지우기</span>`;
   erase.addEventListener('click', () => placeValue(0));
-  palette.appendChild(erase);
+  row.appendChild(erase);
+
+  const hint = document.createElement('div');
+  hint.className = 'fruit-btn hint';
+  hint.innerHTML = `<span class="emoji">💡</span><span>힌트</span>`;
+  hint.addEventListener('click', giveHint);
+  row.appendChild(hint);
 }
 
 function buildLegendDOM() {
@@ -509,9 +591,47 @@ function placeValue(val) {
   if (!selected || gameWon) return;
   const { r, c } = selected;
   if (givenMask[r][c]) return;
+  if (val !== 0 && val !== solution[r][c]) {
+    mistakes++;
+    updateStatText();
+    const el = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+    if (el) {
+      el.classList.remove('hint-pop');
+      void el.offsetWidth;
+      el.classList.add('hint-pop');
+    }
+  }
   puzzle[r][c] = val;
   renderBoard();
   checkWin();
+}
+
+function giveHint() {
+  if (gameWon) return;
+  let target = selected;
+  if (!target || givenMask[target.r][target.c] || puzzle[target.r][target.c] !== 0) {
+    // 선택된 칸이 없거나 이미 채워져 있으면 무작위 빈칸을 찾는다
+    const empties = [];
+    for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) if (puzzle[r][c] === 0) empties.push({r,c});
+    if (empties.length === 0) return;
+    target = empties[Math.floor(Math.random() * empties.length)];
+    selected = target;
+  }
+  const { r, c } = target;
+  puzzle[r][c] = solution[r][c];
+  hintsUsed++;
+  updateStatText();
+  renderBoard();
+  const el = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+  if (el) el.classList.add('hint-pop');
+  checkWin();
+}
+
+function updateStatText() {
+  const mEl = document.getElementById('mistakeText');
+  mEl.textContent = `실수 ${mistakes}회`;
+  mEl.classList.toggle('warn', mistakes > 0);
+  document.getElementById('hintText').textContent = `힌트 ${hintsUsed}회`;
 }
 
 function checkWin() {
@@ -528,6 +648,20 @@ function checkWin() {
   gameWon = true;
   clearInterval(timerInterval);
   document.getElementById('winBanner').classList.add('show');
+
+  const recordEl = document.getElementById('recordMsg');
+  if (hintsUsed === 0) {
+    const best = getBestTime(currentLevel);
+    if (best === null || seconds < best) {
+      setBestTime(currentLevel, seconds);
+      recordEl.textContent = `🎊 신기록 달성! (${formatTime(seconds)})`;
+      updateBestRow();
+    } else {
+      recordEl.textContent = `이번 기록: ${formatTime(seconds)} (최고 기록 ${formatTime(best)})`;
+    }
+  } else {
+    recordEl.textContent = `힌트를 사용해 완료했어요 (${formatTime(seconds)}) — 힌트 없이 풀면 기록에 반영돼요!`;
+  }
 }
 
 // ---------- 타이머 ----------
@@ -556,7 +690,11 @@ function newGame(level) {
   });
   gameWon = false;
   selected = null;
+  mistakes = 0;
+  hintsUsed = 0;
   document.getElementById('winBanner').classList.remove('show');
+  updateStatText();
+  updateBestRow();
 
   const removeCount = DIFFICULTY[currentLevel];
   const { full, puzzle: p } = generatePuzzle(removeCount);
@@ -576,6 +714,7 @@ document.querySelectorAll('.difficulty button').forEach(btn => {
 
 buildBoardDOM();
 buildPaletteDOM();
+buildActionRowDOM();
 buildLegendDOM();
 newGame('medium');
 </script>
