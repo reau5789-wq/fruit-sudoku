@@ -182,8 +182,16 @@
   .cell.selected { background: var(--selected) !important; }
   .cell.peer { background: var(--peer); }
   .cell.conflict .emoji { filter: drop-shadow(0 0 0 var(--conflict)); }
-  .cell.conflict { background: #ffd2ce !important; }
+  .cell.conflict { background: #ff9d92 !important; border: 2px solid var(--conflict); }
   .cell.hint-pop { animation: pop 0.35s ease; }
+  .cell.mistake-flash { animation: shakeRed 0.45s ease; }
+  @keyframes shakeRed {
+    0%, 100% { transform: translateX(0); background: #fffdf8; }
+    15% { transform: translateX(-5px); background: #ff8f84; }
+    35% { transform: translateX(5px); background: #ff8f84; }
+    55% { transform: translateX(-4px); background: #ffb3aa; }
+    75% { transform: translateX(4px); background: #ffb3aa; }
+  }
   @keyframes pop {
     0% { transform: scale(1); }
     40% { transform: scale(1.25); }
@@ -240,8 +248,7 @@
   }
   .action-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 8px;
     margin-top: 8px;
   }
@@ -641,7 +648,9 @@
 
     <div class="win-banner" id="winBanner">
       🎉 완성했습니다! 🎉<br>
-      "그의 안에 거하는 자마다 죄를 범하지 아니하나니" — 성령의 열매로 오늘도 채워가요.
+      "그 안에 거하는 자마다 범죄하지 아니하나니"<br>
+      <span style="font-size:12px; font-weight:500;">-요한일서 3:6-</span><br>
+      오늘도 성령의 열매를 마음에 채워가는 하루 되세요.
       <div id="recordMsg" style="margin-top:8px; font-weight:700;"></div>
     </div>
   </div>
@@ -852,6 +861,8 @@ function startDailyChallenge() {
   mistakes = 0;
   hintsUsed = 0;
   seconds = 0;
+  history = [];
+  updateUndoButtonState();
   document.getElementById('winBanner').classList.remove('show');
   document.getElementById('fullBoardWarning').style.display = 'none';
   updateStatText();
@@ -1064,6 +1075,13 @@ function buildActionRowDOM() {
   const row = document.getElementById('actionRow');
   row.innerHTML = '';
 
+  const undo = document.createElement('div');
+  undo.className = 'fruit-btn undo disabled';
+  undo.id = 'undoBtn';
+  undo.innerHTML = `<span class="emoji">↩️</span><span>되돌리기</span>`;
+  undo.addEventListener('click', undoMove);
+  row.appendChild(undo);
+
   const erase = document.createElement('div');
   erase.className = 'fruit-btn erase';
   erase.innerHTML = `<span class="emoji">✖️</span><span>지우기</span>`;
@@ -1205,20 +1223,56 @@ function selectCell(r, c) {
   highlightSelection();
 }
 
+let history = []; // 실행취소용 스택: {r, c, prevValue, prevNotes, wasMistake, wasHint}
+
+function pushHistory(r, c, wasMistake, wasHint) {
+  history.push({
+    r, c,
+    prevValue: puzzle[r][c],
+    prevNotes: notes[r][c].slice(),
+    wasMistake, wasHint
+  });
+  if (history.length > 100) history.shift(); // 메모리 보호
+  updateUndoButtonState();
+}
+
+function undoMove() {
+  if (history.length === 0 || gameWon) return;
+  const last = history.pop();
+  puzzle[last.r][last.c] = last.prevValue;
+  notes[last.r][last.c] = last.prevNotes;
+  if (last.wasMistake) mistakes = Math.max(0, mistakes - 1);
+  if (last.wasHint) hintsUsed = Math.max(0, hintsUsed - 1);
+  updateStatText();
+  renderBoard();
+  saveGame();
+  document.getElementById('fullBoardWarning').style.display = 'none';
+  updateUndoButtonState();
+}
+
+function updateUndoButtonState() {
+  const btn = document.getElementById('undoBtn');
+  if (btn) btn.classList.toggle('disabled', history.length === 0);
+}
+
 function placeValue(val) {
   if (!selected || gameWon) return;
   const { r, c } = selected;
   if (givenMask[r][c]) return;
+  let wasMistake = false;
   if (val !== 0 && val !== solution[r][c] && autoCheck) {
+    wasMistake = true;
     mistakes++;
     updateStatText();
+    if (navigator.vibrate) navigator.vibrate(200);
     const el = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
     if (el) {
-      el.classList.remove('hint-pop');
+      el.classList.remove('mistake-flash');
       void el.offsetWidth;
-      el.classList.add('hint-pop');
+      el.classList.add('mistake-flash');
     }
   }
+  pushHistory(r, c, wasMistake, false);
   puzzle[r][c] = val;
   notes[r][c] = Array(10).fill(false);
   if (val !== 0) clearNotesForValue(r, c, val);
@@ -1242,6 +1296,7 @@ function giveHint() {
     selected = target;
   }
   const { r, c } = target;
+  pushHistory(r, c, false, true);
   puzzle[r][c] = solution[r][c];
   notes[r][c] = Array(10).fill(false);
   clearNotesForValue(r, c, solution[r][c]);
@@ -1347,6 +1402,8 @@ function newGame(level) {
   mistakes = 0;
   hintsUsed = 0;
   seconds = 0;
+  history = [];
+  updateUndoButtonState();
   document.getElementById('winBanner').classList.remove('show');
   document.getElementById('fullBoardWarning').style.display = 'none';
   updateStatText();
@@ -1374,6 +1431,8 @@ function resumeGame(data) {
   mistakes = data.mistakes || 0;
   hintsUsed = data.hintsUsed || 0;
   seconds = data.seconds || 0;
+  history = [];
+  updateUndoButtonState();
   document.getElementById('winBanner').classList.remove('show');
   document.getElementById('fullBoardWarning').style.display = 'none';
   updateStatText();
