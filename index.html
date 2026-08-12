@@ -110,6 +110,16 @@
     flex-wrap: wrap;
   }
   #mistakeText.warn { color: var(--conflict); font-weight: 800; }
+  #fullBoardWarning {
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--conflict);
+    border-radius: 8px;
+    padding: 7px;
+    margin-bottom: 8px;
+  }
 
   .board {
     display: grid;
@@ -410,6 +420,7 @@
         <span id="timer">00:00</span>
       </div>
     </div>
+    <div id="fullBoardWarning" style="display:none;">❗ 다 채웠지만 잘못된 칸이 있어요! 빨간 칸을 찾아 고쳐보세요.</div>
 
     <div class="board" id="board"></div>
 
@@ -631,6 +642,7 @@ function startDailyChallenge() {
   hintsUsed = 0;
   seconds = 0;
   document.getElementById('winBanner').classList.remove('show');
+  document.getElementById('fullBoardWarning').style.display = 'none';
   updateStatText();
   document.getElementById('bestRow').style.display = 'none';
   document.getElementById('dailyBanner').style.display = 'block';
@@ -1002,13 +1014,16 @@ function placeValue(val) {
 
 function giveHint() {
   if (gameWon) return;
+  // "고쳐야 할 칸" = 처음부터 주어진 칸이 아니면서, 정답과 다른 칸(빈 칸 포함)
+  function needsFix(r, c) {
+    return !givenMask[r][c] && puzzle[r][c] !== solution[r][c];
+  }
   let target = selected;
-  if (!target || givenMask[target.r][target.c] || puzzle[target.r][target.c] !== 0) {
-    // 선택된 칸이 없거나 이미 채워져 있으면 무작위 빈칸을 찾는다
-    const empties = [];
-    for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) if (puzzle[r][c] === 0) empties.push({r,c});
-    if (empties.length === 0) return;
-    target = empties[Math.floor(Math.random() * empties.length)];
+  if (!target || !needsFix(target.r, target.c)) {
+    const candidates = [];
+    for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) if (needsFix(r, c)) candidates.push({r,c});
+    if (candidates.length === 0) return; // 고칠 칸이 없음 (이미 정답 상태)
+    target = candidates[Math.floor(Math.random() * candidates.length)];
     selected = target;
   }
   const { r, c } = target;
@@ -1032,16 +1047,26 @@ function updateStatText() {
 }
 
 function checkWin() {
+  let full = true;
+  let allValid = true;
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
-      if (puzzle[r][c] === 0) return;
+      if (puzzle[r][c] === 0) { full = false; continue; }
       const val = puzzle[r][c];
       puzzle[r][c] = 0;
       const ok = isValid(puzzle, r, c, val);
       puzzle[r][c] = val;
-      if (!ok) return;
+      if (!ok) allValid = false;
     }
   }
+  const warnEl = document.getElementById('fullBoardWarning');
+  if (full && !allValid) {
+    warnEl.style.display = 'block';
+    return;
+  }
+  warnEl.style.display = 'none';
+  if (!full || !allValid) return;
+
   gameWon = true;
   clearInterval(timerInterval);
   clearSave();
@@ -1108,6 +1133,7 @@ function newGame(level) {
   hintsUsed = 0;
   seconds = 0;
   document.getElementById('winBanner').classList.remove('show');
+  document.getElementById('fullBoardWarning').style.display = 'none';
   updateStatText();
   updateBestRow();
 
@@ -1134,6 +1160,7 @@ function resumeGame(data) {
   hintsUsed = data.hintsUsed || 0;
   seconds = data.seconds || 0;
   document.getElementById('winBanner').classList.remove('show');
+  document.getElementById('fullBoardWarning').style.display = 'none';
   updateStatText();
   updateBestRow();
 
