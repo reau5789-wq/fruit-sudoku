@@ -4,84 +4,70 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#8a5a3b">
+<meta name="theme-color" content="#7a2e12">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>성령의 열매 스도쿠</title>
 <style>
   :root {
-    --bg: #faf6ee;
-    --panel: #ffffff;
-    --line-thin: #d9cdb8;
-    --line-thick: #7a5c3e;
-    --text: #3a2e21;
-    --accent: #8a5a3b;
-    --accent-light: #f1e2c9;
-    --given: #5a4632;
-    --user: #8a5a3b;
-    --conflict: #d9534f;
-    --selected: #ffe9b3;
-    --peer: #fbf1de;
+    --bg-1: #3b2415;
+    --bg-2: #1c1108;
+    --panel: #fffaf2;
+    --line-thin: #d9c4a3;
+    --line-thick: #3d2412;
+    --text: #241606;
+    --accent: #b5451f;
+    --accent-dark: #8a3216;
+    --accent-light: #f7ddb8;
+    --given: #241606;
+    --user: #b5451f;
+    --conflict: #e0342a;
+    --selected: #ffce54;
+    --peer: #ffe9c4;
   }
   * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
   body {
-    margin: 0;
     font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
-    background: linear-gradient(180deg, #fdf9f0, #f3e9d6);
+    background: linear-gradient(160deg, var(--bg-1), var(--bg-2));
     color: var(--text);
     display: flex;
     justify-content: center;
-    padding: 24px 12px 60px;
+    padding: 10px 10px 50px;
     min-height: 100vh;
   }
   .wrap {
     width: 100%;
     max-width: 560px;
   }
+
+  /* ===== 상단 게임 집중 영역 ===== */
   header {
     text-align: center;
-    margin-bottom: 14px;
+    margin-bottom: 8px;
+    padding-top: 4px;
   }
   header h1 {
-    font-size: 22px;
-    margin: 0 0 6px;
-    color: var(--accent);
-    letter-spacing: 1px;
-  }
-  header p {
+    font-size: 21px;
     margin: 0;
-    font-size: 13px;
-    color: #8a7c68;
-    line-height: 1.5;
-  }
-  .verse {
-    text-align: center;
-    font-size: 12.5px;
-    color: #a08a5f;
-    margin: 8px 0 18px;
-    font-style: italic;
-    line-height: 1.6;
-  }
-  .verse .ref {
-    display: block;
-    margin-top: 4px;
-    font-size: 11.5px;
-    font-style: normal;
-    color: #b8a67e;
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.35);
   }
 
   .panel {
     background: var(--panel);
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 6px 24px rgba(122, 92, 62, 0.12);
+    border-radius: 18px;
+    padding: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
   }
 
   .toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     gap: 8px;
     flex-wrap: wrap;
   }
@@ -90,14 +76,14 @@
     gap: 6px;
   }
   .difficulty button, .new-game-btn {
-    border: 1px solid var(--line-thin);
+    border: 2px solid var(--accent);
     background: var(--accent-light);
-    color: var(--accent);
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 12.5px;
+    color: var(--accent-dark);
+    padding: 7px 13px;
+    border-radius: 9px;
+    font-size: 13px;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 800;
   }
   .difficulty button.active {
     background: var(--accent);
@@ -110,27 +96,20 @@
   .status-row {
     display: flex;
     justify-content: space-between;
-    font-size: 12.5px;
-    color: #8a7c68;
-    margin-bottom: 6px;
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 700;
+    margin-bottom: 8px;
     flex-wrap: wrap;
     gap: 4px 10px;
   }
-  #timer { font-variant-numeric: tabular-nums; }
+  #timer { font-variant-numeric: tabular-nums; color: var(--accent-dark); }
   .stat-group {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
   }
-  .best-row {
-    text-align: center;
-    font-size: 12px;
-    color: var(--accent);
-    margin-bottom: 10px;
-    font-weight: 600;
-  }
-  .best-row .no-record { color: #b0a48c; font-weight: 500; }
-  #mistakeText.warn { color: var(--conflict); font-weight: 700; }
+  #mistakeText.warn { color: var(--conflict); font-weight: 800; }
 
   .board {
     display: grid;
@@ -138,11 +117,11 @@
     grid-template-rows: repeat(9, 1fr);
     width: 100%;
     aspect-ratio: 1 / 1;
-    border: 3px solid var(--line-thick);
+    border: 4px solid var(--line-thick);
     border-radius: 8px;
     overflow: hidden;
-    background: var(--line-thin);
-    gap: 1px;
+    background: var(--line-thick);
+    gap: 1.5px;
   }
   .cell {
     background: #fffdf8;
@@ -158,25 +137,42 @@
     padding: 1px 0;
   }
   .cell .emoji {
-    font-size: clamp(12px, 3vw, 19px);
+    font-size: clamp(13px, 3.4vw, 22px);
     line-height: 1;
   }
   .cell .fruit-name {
-    font-size: clamp(6.5px, 1.7vw, 9.5px);
+    font-size: clamp(6.5px, 1.8vw, 10px);
     line-height: 1;
     color: var(--given);
+    font-weight: 800;
     letter-spacing: -0.3px;
     white-space: nowrap;
   }
-  .cell.given { background: #f5efe0; cursor: default; }
+  .cell-notes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    width: 100%;
+    height: 100%;
+  }
+  .cell-notes span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(5.5px, 1.6vw, 8px);
+    line-height: 1;
+    color: #a3835a;
+  }
+  .cell.given { background: #f2e6d0; cursor: default; }
   .cell.given .emoji { filter: none; }
-  .cell.given .fruit-name { font-weight: 700; color: var(--given); }
-  .cell.user .emoji { opacity: 0.95; }
-  .cell.user .fruit-name { color: var(--user); font-weight: 500; }
+  .cell.given .fruit-name { font-weight: 800; color: var(--given); }
+  .cell.user .emoji { opacity: 1; }
+  .cell.user .fruit-name { color: var(--user); font-weight: 700; }
+  .cell.same-value { background: #ffe0a3 !important; }
   .cell.selected { background: var(--selected) !important; }
   .cell.peer { background: var(--peer); }
   .cell.conflict .emoji { filter: drop-shadow(0 0 0 var(--conflict)); }
-  .cell.conflict { background: #fbe3e1 !important; }
+  .cell.conflict { background: #ffd2ce !important; }
   .cell.hint-pop { animation: pop 0.35s ease; }
   @keyframes pop {
     0% { transform: scale(1); }
@@ -185,111 +181,196 @@
   }
 
   /* thick borders every 3 columns/rows */
-  .cell[data-c="2"] { border-right: 2.5px solid var(--line-thick); }
-  .cell[data-c="5"] { border-right: 2.5px solid var(--line-thick); }
-  .cell[data-r="2"] { border-bottom: 2.5px solid var(--line-thick); }
-  .cell[data-r="5"] { border-bottom: 2.5px solid var(--line-thick); }
+  .cell[data-c="2"] { border-right: 3px solid var(--line-thick); }
+  .cell[data-c="5"] { border-right: 3px solid var(--line-thick); }
+  .cell[data-r="2"] { border-bottom: 3px solid var(--line-thick); }
+  .cell[data-r="5"] { border-bottom: 3px solid var(--line-thick); }
 
   .palette {
     display: grid;
     grid-template-columns: repeat(9, 1fr);
-    gap: 6px;
-    margin-top: 16px;
+    gap: 5px;
+    margin-top: 12px;
   }
   .fruit-btn {
     background: var(--accent-light);
-    border: 1px solid var(--line-thin);
+    border: 2px solid var(--accent);
     border-radius: 10px;
-    padding: 8px 2px 6px;
+    padding: 7px 2px 5px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
+    gap: 2px;
     cursor: pointer;
     font-size: 10px;
-    color: var(--accent);
-    font-weight: 600;
+    color: var(--accent-dark);
+    font-weight: 800;
   }
   .fruit-btn .emoji { font-size: 18px; }
   .fruit-btn:active { transform: scale(0.94); }
+  .fruit-btn.disabled {
+    opacity: 0.3;
+    pointer-events: none;
+    filter: grayscale(70%);
+  }
+  .fruit-btn.toggle-on {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent-dark);
+  }
   .fruit-btn.erase {
     background: #efe6d8;
-    color: #8a7c68;
+    color: #6b5a42;
+    border-color: #c9b48c;
   }
   .fruit-btn.hint {
     background: #fff2d6;
-    color: #b8862f;
-    border-color: #e6cf9a;
+    color: #a3691a;
+    border-color: #e6b95a;
   }
   .action-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
     gap: 8px;
     margin-top: 8px;
   }
   .action-row .fruit-btn {
     flex-direction: row;
     justify-content: center;
-    padding: 9px 4px;
-    font-size: 12px;
+    padding: 10px 4px;
+    font-size: 12.5px;
   }
-  .action-row .fruit-btn .emoji { font-size: 15px; margin-right: 4px; }
-
-  .legend {
-    margin-top: 16px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px 10px;
-    font-size: 11.5px;
-    color: #8a7c68;
-  }
-  .legend div { display: flex; align-items: center; gap: 5px; }
-  .legend .emoji { font-size: 14px; }
+  .action-row .fruit-btn .emoji { font-size: 16px; margin-right: 4px; }
 
   .win-banner {
     display: none;
     text-align: center;
-    margin-top: 14px;
+    margin-top: 12px;
     padding: 14px;
-    background: #eef7ea;
-    border: 1px solid #b9dfae;
+    background: #eaf7e6;
+    border: 2px solid #7bc26a;
     border-radius: 12px;
-    color: #3e6b30;
+    color: #245c1a;
     font-size: 14px;
+    font-weight: 700;
     line-height: 1.6;
   }
   .win-banner.show { display: block; }
 
+  /* ===== 아래 보조 정보 영역 ===== */
+  .secondary {
+    margin-top: 16px;
+  }
+  .best-row {
+    text-align: center;
+    font-size: 13px;
+    color: #ffd9a8;
+    margin-bottom: 6px;
+    font-weight: 800;
+  }
+  .best-row .no-record { color: #cbb79a; font-weight: 600; }
+  .score-row {
+    text-align: center;
+    font-size: 13px;
+    color: #ffd9a8;
+    font-weight: 800;
+    margin-bottom: 14px;
+  }
+
+  .verse {
+    text-align: center;
+    font-size: 12.5px;
+    color: #e9d9c2;
+    margin: 6px 0 16px;
+    font-style: italic;
+    line-height: 1.6;
+  }
+  .verse .ref {
+    display: block;
+    margin-top: 4px;
+    font-size: 11.5px;
+    font-style: normal;
+    color: #cbb79a;
+  }
+
+  .daily-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, var(--accent), #d97a3f);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  }
+  .daily-title { font-size: 14px; font-weight: 800; }
+  .daily-streak { font-size: 12.5px; margin-top: 4px; color: #ffe9c9; }
+  .daily-play-btn {
+    background: #fff;
+    color: var(--accent-dark);
+    border: none;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .daily-banner {
+    text-align: center;
+    font-size: 12.5px;
+    color: #4a2e14;
+    background: #ffe9c4;
+    border: 1px solid #e6b95a;
+    border-radius: 10px;
+    padding: 8px;
+    margin-bottom: 12px;
+  }
+  .daily-banner a { color: var(--accent-dark); font-weight: 800; }
+
+  .legend {
+    margin-top: 4px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px 10px;
+    font-size: 12px;
+    color: #e9d9c2;
+    font-weight: 600;
+  }
+  .legend div { display: flex; align-items: center; gap: 5px; }
+  .legend .emoji { font-size: 15px; }
+
   footer.note {
     text-align: center;
     font-size: 11px;
-    color: #b0a48c;
-    margin-top: 16px;
+    color: #b39d7c;
+    margin-top: 18px;
   }
   footer.copyright {
     text-align: center;
     font-size: 10.5px;
-    color: #c2b8a3;
+    color: #937a5c;
     margin-top: 6px;
     letter-spacing: 0.2px;
   }
 
   .bgm-btn {
     position: fixed;
-    top: 16px;
-    right: 16px;
+    top: 14px;
+    right: 14px;
     width: 46px;
     height: 46px;
     border-radius: 50%;
     background: var(--accent);
     color: #fff;
-    border: none;
+    border: 2px solid #fff;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 19px;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(122, 92, 62, 0.35);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
     z-index: 50;
     transition: transform 0.15s;
   }
@@ -298,8 +379,8 @@
     animation: bgmPulse 2.2s ease-in-out infinite;
   }
   @keyframes bgmPulse {
-    0%, 100% { box-shadow: 0 4px 14px rgba(122, 92, 62, 0.35); }
-    50% { box-shadow: 0 4px 22px rgba(122, 92, 62, 0.6); }
+    0%, 100% { box-shadow: 0 4px 14px rgba(0,0,0,0.4); }
+    50% { box-shadow: 0 4px 22px rgba(255,206,84,0.7); }
   }
 </style>
 </head>
@@ -309,9 +390,7 @@
 <div class="wrap">
   <header>
     <h1>🕊️ 성령의 열매 스도쿠</h1>
-    <p>숫자 대신 성령의 9가지 열매로 채우는 거룩한 스도쿠</p>
   </header>
-  <div class="verse">"오직 성령의 열매는 사랑과 희락과 화평과 참음과 자비와 양선과 충성과 온유와 절제니 이같은 것을 금지할 법이 없느니라"<span class="ref">-갈라디아서 5:22~23-</span></div>
 
   <div class="panel">
     <div class="toolbar">
@@ -322,7 +401,6 @@
       </div>
       <button class="new-game-btn" id="newGameBtn">새 게임</button>
     </div>
-    <div class="best-row" id="bestRow"></div>
 
     <div class="status-row">
       <span id="progressText">0 / 81 채움</span>
@@ -343,6 +421,24 @@
       🎉 완성했습니다! 🎉<br>
       "그의 안에 거하는 자마다 죄를 범하지 아니하나니" — 성령의 열매로 오늘도 채워가요.
       <div id="recordMsg" style="margin-top:8px; font-weight:700;"></div>
+    </div>
+  </div>
+
+  <div class="secondary">
+    <div class="best-row" id="bestRow"></div>
+    <div class="score-row" id="scoreRow">🍇 총점: 0점</div>
+
+    <div class="verse">"오직 성령의 열매는 사랑과 희락과 화평과 참음과 자비와 양선과 충성과 온유와 절제니 이같은 것을 금지할 법이 없느니라"<span class="ref">-갈라디아서 5:22~23-</span></div>
+
+    <div class="daily-card" id="dailyCard">
+      <div class="daily-left">
+        <div class="daily-title">📅 오늘의 도전 <span id="dailyDate"></span></div>
+        <div class="daily-streak" id="dailyStreak">🔥 연속 0일</div>
+      </div>
+      <button class="daily-play-btn" id="dailyPlayBtn">플레이</button>
+    </div>
+    <div class="daily-banner" id="dailyBanner" style="display:none;">
+      오늘의 도전 진행 중 · <a href="#" id="exitDailyLink">일반 게임으로 돌아가기</a>
     </div>
 
     <div class="legend" id="legend"></div>
@@ -377,6 +473,64 @@ let seconds = 0;
 let gameWon = false;
 let mistakes = 0;
 let hintsUsed = 0;
+let notes = [];          // 9x9, 각 칸은 length-10 boolean 배열 (인덱스 1~9 사용)
+let memoMode = false;
+let autoCheck = true;
+let dailyMode = false;
+let totalScore = 0;
+
+function emptyNotes() {
+  return Array.from({length:9}, () => Array.from({length:9}, () => Array(10).fill(false)));
+}
+
+const SETTINGS_KEY = 'fruitSudokuSettings';
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (typeof s.memoMode === 'boolean') memoMode = s.memoMode;
+    if (typeof s.autoCheck === 'boolean') autoCheck = s.autoCheck;
+  } catch (e) {}
+}
+function saveSettings() {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ memoMode, autoCheck })); } catch (e) {}
+}
+
+function toggleMemoMode() {
+  memoMode = !memoMode;
+  saveSettings();
+  updateToggleButtons();
+}
+function toggleAutoCheck() {
+  autoCheck = !autoCheck;
+  saveSettings();
+  updateToggleButtons();
+}
+
+function handleFruitClick(val) {
+  if (!selected || gameWon) return;
+  const { r, c } = selected;
+  if (givenMask[r][c]) return;
+  if (memoMode) {
+    if (puzzle[r][c] !== 0) return; // 이미 채워진 칸엔 메모 불가
+    notes[r][c][val] = !notes[r][c][val];
+    renderBoard();
+    saveGame();
+    return;
+  }
+  placeValue(val);
+}
+
+function clearNotesForValue(r, c, val) {
+  // 같은 행·열·3x3 박스에서 방금 채운 값과 같은 메모를 자동으로 지운다
+  for (let i = 0; i < 9; i++) {
+    notes[r][i][val] = false;
+    notes[i][c][val] = false;
+  }
+  const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) notes[br+i][bc+j][val] = false;
+}
 
 const BEST_KEY_PREFIX = 'fruitSudokuBest_';
 
@@ -403,17 +557,156 @@ function updateBestRow() {
   }
 }
 
+// ---------- 점수 시스템 ----------
+const SCORE_KEY = 'fruitSudokuTotalScore';
+function loadTotalScore() {
+  try { const v = localStorage.getItem(SCORE_KEY); return v ? parseInt(v, 10) : 0; }
+  catch (e) { return 0; }
+}
+function saveTotalScore(v) {
+  try { localStorage.setItem(SCORE_KEY, String(v)); } catch (e) {}
+}
+function updateScoreRow() {
+  document.getElementById('scoreRow').textContent = `🍇 총점: ${totalScore}점`;
+}
+function computeScore(level) {
+  const base = { easy: 500, medium: 1000, hard: 1500 }[level] || 1000;
+  const raw = base - seconds * 2 - mistakes * 20 - hintsUsed * 50;
+  return Math.max(50, raw);
+}
+
+// ---------- 일일 도전 · 연속 플레이 스트릭 ----------
+const STREAK_KEY = 'fruitSudokuStreak';
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function yesterdayStr() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function loadStreak() {
+  try {
+    const raw = localStorage.getItem(STREAK_KEY);
+    if (!raw) return { lastDate: null, streak: 0 };
+    return JSON.parse(raw);
+  } catch (e) { return { lastDate: null, streak: 0 }; }
+}
+function saveStreak(obj) {
+  try { localStorage.setItem(STREAK_KEY, JSON.stringify(obj)); } catch (e) {}
+}
+function updateDailyUI() {
+  const d = new Date();
+  document.getElementById('dailyDate').textContent = `${d.getMonth()+1}월 ${d.getDate()}일`;
+  const streakObj = loadStreak();
+  document.getElementById('dailyStreak').textContent = `🔥 연속 ${streakObj.streak}일`;
+  const playBtn = document.getElementById('dailyPlayBtn');
+  if (streakObj.lastDate === todayStr()) {
+    playBtn.textContent = '완료 ✓';
+    playBtn.disabled = true;
+  } else {
+    playBtn.textContent = '플레이';
+    playBtn.disabled = false;
+  }
+}
+
+function startDailyChallenge() {
+  if (dailyMode) return;
+  const streakObj = loadStreak();
+  if (streakObj.lastDate === todayStr()) return; // 오늘 이미 완료함
+
+  dailyMode = true;
+  currentLevel = 'daily';
+  const rng = mulberry32(seedFromDateStr(todayStr()));
+  const { full, puzzle: p } = generatePuzzle(DIFFICULTY.medium, rng);
+  solution = full;
+  puzzle = p.map(row => row.slice());
+  givenMask = puzzle.map(row => row.map(v => v !== 0));
+  notes = emptyNotes();
+
+  gameWon = false;
+  selected = null;
+  mistakes = 0;
+  hintsUsed = 0;
+  seconds = 0;
+  document.getElementById('winBanner').classList.remove('show');
+  updateStatText();
+  document.getElementById('bestRow').style.display = 'none';
+  document.getElementById('dailyBanner').style.display = 'block';
+  document.querySelectorAll('.difficulty button').forEach(b => b.classList.remove('active'));
+
+  renderBoard();
+  resetTimer();
+}
+
+function exitDailyMode() {
+  dailyMode = false;
+  document.getElementById('dailyBanner').style.display = 'none';
+  document.getElementById('bestRow').style.display = '';
+  const saved = loadGame();
+  if (saved) resumeGame(saved); else newGame('medium');
+}
+
+// ---------- 자동저장 (이어하기) ----------
+const SAVE_KEY = 'fruitSudokuSave';
+
+function saveGame() {
+  if (gameWon || dailyMode) return;
+  try {
+    const data = {
+      currentLevel, puzzle, solution, givenMask,
+      seconds, mistakes, hintsUsed, notes
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  } catch (e) { /* 저장 실패는 무시 (게임 진행에 영향 없음) */ }
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data || !data.puzzle || !data.solution || !data.givenMask) return null;
+    return data;
+  } catch (e) {
+    return null;
+  }
+}
+
+function clearSave() {
+  try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+}
+
 // ---------- 스도쿠 생성 ----------
 function emptyGrid() {
   return Array.from({length:9}, () => Array(9).fill(0));
 }
 
-function shuffle(arr) {
+function shuffle(arr, rng) {
+  const rand = rng || Math.random;
   for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rand() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
+}
+
+// 날짜 문자열로부터 결정론적 시드를 생성해, 같은 날짜엔 항상 같은 퍼즐이 나오게 한다
+function mulberry32(seed) {
+  return function () {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function seedFromDateStr(dateStr) {
+  let h = 0;
+  for (let i = 0; i < dateStr.length; i++) {
+    h = (h * 31 + dateStr.charCodeAt(i)) | 0;
+  }
+  return h;
 }
 
 function isValid(grid, r, c, val) {
@@ -430,15 +723,15 @@ function isValid(grid, r, c, val) {
   return true;
 }
 
-function fillGrid(grid) {
+function fillGrid(grid, rng) {
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
       if (grid[r][c] === 0) {
-        const nums = shuffle([1,2,3,4,5,6,7,8,9]);
+        const nums = shuffle([1,2,3,4,5,6,7,8,9], rng);
         for (const n of nums) {
           if (isValid(grid, r, c, n)) {
             grid[r][c] = n;
-            if (fillGrid(grid)) return true;
+            if (fillGrid(grid, rng)) return true;
             grid[r][c] = 0;
           }
         }
@@ -476,14 +769,14 @@ function countSolutions(grid, limit) {
   return count;
 }
 
-function generatePuzzle(removeCount) {
+function generatePuzzle(removeCount, rng) {
   const full = emptyGrid();
-  fillGrid(full);
+  fillGrid(full, rng);
   const p = full.map(row => row.slice());
 
   const cells = [];
   for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) cells.push([r,c]);
-  shuffle(cells);
+  shuffle(cells, rng);
 
   let removed = 0;
   for (const [r,c] of cells) {
@@ -523,9 +816,24 @@ function buildPaletteDOM() {
   FRUITS.forEach((f, idx) => {
     const btn = document.createElement('div');
     btn.className = 'fruit-btn';
+    btn.dataset.value = idx + 1;
     btn.innerHTML = `<span class="emoji">${f.emoji}</span><span>${f.name}</span>`;
-    btn.addEventListener('click', () => placeValue(idx + 1));
+    btn.addEventListener('click', () => handleFruitClick(idx + 1));
     palette.appendChild(btn);
+  });
+}
+
+function updatePaletteState() {
+  const counts = Array(10).fill(0);
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const v = puzzle[r][c];
+      if (v !== 0) counts[v]++;
+    }
+  }
+  document.querySelectorAll('.fruit-btn[data-value]').forEach(btn => {
+    const v = +btn.dataset.value;
+    btn.classList.toggle('disabled', counts[v] >= 9);
   });
 }
 
@@ -539,11 +847,34 @@ function buildActionRowDOM() {
   erase.addEventListener('click', () => placeValue(0));
   row.appendChild(erase);
 
+  const memo = document.createElement('div');
+  memo.className = 'fruit-btn memo';
+  memo.id = 'memoToggleBtn';
+  memo.innerHTML = `<span class="emoji">✏️</span><span>메모</span>`;
+  memo.addEventListener('click', toggleMemoMode);
+  row.appendChild(memo);
+
   const hint = document.createElement('div');
   hint.className = 'fruit-btn hint';
   hint.innerHTML = `<span class="emoji">💡</span><span>힌트</span>`;
   hint.addEventListener('click', giveHint);
   row.appendChild(hint);
+
+  const autoCheckBtn = document.createElement('div');
+  autoCheckBtn.className = 'fruit-btn autocheck';
+  autoCheckBtn.id = 'autoCheckToggleBtn';
+  autoCheckBtn.innerHTML = `<span class="emoji">✅</span><span>자동검사</span>`;
+  autoCheckBtn.addEventListener('click', toggleAutoCheck);
+  row.appendChild(autoCheckBtn);
+
+  updateToggleButtons();
+}
+
+function updateToggleButtons() {
+  const memoBtn = document.getElementById('memoToggleBtn');
+  const acBtn = document.getElementById('autoCheckToggleBtn');
+  if (memoBtn) memoBtn.classList.toggle('toggle-on', memoMode);
+  if (acBtn) acBtn.classList.toggle('toggle-on', autoCheck);
 }
 
 function buildLegendDOM() {
@@ -561,7 +892,7 @@ function renderBoard() {
   cellsEls.forEach(el => {
     const r = +el.dataset.r, c = +el.dataset.c;
     const val = puzzle[r][c];
-    el.classList.remove('given','user','selected','peer','conflict');
+    el.classList.remove('given','user','selected','peer','conflict','same-value');
     el.innerHTML = '';
     if (val !== 0) {
       const f = FRUITS[val - 1];
@@ -575,17 +906,28 @@ function renderBoard() {
       el.appendChild(emojiSpan);
       el.appendChild(nameSpan);
       el.classList.add(givenMask[r][c] ? 'given' : 'user');
+    } else if (notes[r][c] && notes[r][c].some(v => v)) {
+      const grid = document.createElement('div');
+      grid.className = 'cell-notes';
+      for (let n = 1; n <= 9; n++) {
+        const span = document.createElement('span');
+        span.textContent = notes[r][c][n] ? FRUITS[n-1].emoji : '';
+        grid.appendChild(span);
+      }
+      el.appendChild(grid);
     }
   });
   highlightSelection();
   updateProgress();
+  updatePaletteState();
 }
 
 function highlightSelection() {
   const cellsEls = document.querySelectorAll('.cell');
-  cellsEls.forEach(el => el.classList.remove('selected','peer','conflict'));
+  cellsEls.forEach(el => el.classList.remove('selected','peer','conflict','same-value'));
   if (!selected) return;
   const { r: sr, c: sc } = selected;
+  const selVal = puzzle[sr][sc];
   cellsEls.forEach(el => {
     const r = +el.dataset.r, c = +el.dataset.c;
     if (r === sr && c === sc) {
@@ -593,6 +935,9 @@ function highlightSelection() {
     } else if (r === sr || c === sc ||
       (Math.floor(r/3) === Math.floor(sr/3) && Math.floor(c/3) === Math.floor(sc/3))) {
       el.classList.add('peer');
+    }
+    if (selVal !== 0 && puzzle[r][c] === selVal && !(r === sr && c === sc)) {
+      el.classList.add('same-value');
     }
   });
   markConflicts();
@@ -637,7 +982,7 @@ function placeValue(val) {
   if (!selected || gameWon) return;
   const { r, c } = selected;
   if (givenMask[r][c]) return;
-  if (val !== 0 && val !== solution[r][c]) {
+  if (val !== 0 && val !== solution[r][c] && autoCheck) {
     mistakes++;
     updateStatText();
     const el = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
@@ -648,7 +993,10 @@ function placeValue(val) {
     }
   }
   puzzle[r][c] = val;
+  notes[r][c] = Array(10).fill(false);
+  if (val !== 0) clearNotesForValue(r, c, val);
   renderBoard();
+  saveGame();
   checkWin();
 }
 
@@ -665,9 +1013,12 @@ function giveHint() {
   }
   const { r, c } = target;
   puzzle[r][c] = solution[r][c];
+  notes[r][c] = Array(10).fill(false);
+  clearNotesForValue(r, c, solution[r][c]);
   hintsUsed++;
   updateStatText();
   renderBoard();
+  saveGame();
   const el = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
   if (el) el.classList.add('hint-pop');
   checkWin();
@@ -693,32 +1044,44 @@ function checkWin() {
   }
   gameWon = true;
   clearInterval(timerInterval);
+  clearSave();
   document.getElementById('winBanner').classList.add('show');
 
+  const score = computeScore(dailyMode ? 'medium' : currentLevel);
+  totalScore += score;
+  saveTotalScore(totalScore);
+  updateScoreRow();
+
   const recordEl = document.getElementById('recordMsg');
-  if (hintsUsed === 0) {
+  if (dailyMode) {
+    const streakObj = loadStreak();
+    const newStreak = (streakObj.lastDate === yesterdayStr()) ? streakObj.streak + 1 : 1;
+    saveStreak({ lastDate: todayStr(), streak: newStreak });
+    updateDailyUI();
+    recordEl.textContent = `🔥 오늘의 도전 완료! 연속 ${newStreak}일째 · +${score}점`;
+  } else if (hintsUsed === 0) {
     const best = getBestTime(currentLevel);
     if (best === null || seconds < best) {
       setBestTime(currentLevel, seconds);
-      recordEl.textContent = `🎊 신기록 달성! (${formatTime(seconds)})`;
+      recordEl.textContent = `🎊 신기록 달성! (${formatTime(seconds)}) · +${score}점`;
       updateBestRow();
     } else {
-      recordEl.textContent = `이번 기록: ${formatTime(seconds)} (최고 기록 ${formatTime(best)})`;
+      recordEl.textContent = `이번 기록: ${formatTime(seconds)} (최고 기록 ${formatTime(best)}) · +${score}점`;
     }
   } else {
-    recordEl.textContent = `힌트를 사용해 완료했어요 (${formatTime(seconds)}) — 힌트 없이 풀면 기록에 반영돼요!`;
+    recordEl.textContent = `힌트를 사용해 완료했어요 (${formatTime(seconds)}) — 힌트 없이 풀면 기록에 반영돼요! · +${score}점`;
   }
 }
 
 // ---------- 타이머 ----------
 function resetTimer() {
   clearInterval(timerInterval);
-  seconds = 0;
-  updateTimerDisplay();
   timerInterval = setInterval(() => {
     seconds++;
     updateTimerDisplay();
+    saveGame();
   }, 1000);
+  updateTimerDisplay();
 }
 function updateTimerDisplay() {
   const m = String(Math.floor(seconds / 60)).padStart(2,'0');
@@ -730,6 +1093,11 @@ function updateTimerDisplay() {
 let currentLevel = 'medium';
 
 function newGame(level) {
+  if (dailyMode) {
+    dailyMode = false;
+    document.getElementById('dailyBanner').style.display = 'none';
+    document.getElementById('bestRow').style.display = '';
+  }
   currentLevel = level || currentLevel;
   document.querySelectorAll('.difficulty button').forEach(b => {
     b.classList.toggle('active', b.dataset.level === currentLevel);
@@ -738,6 +1106,7 @@ function newGame(level) {
   selected = null;
   mistakes = 0;
   hintsUsed = 0;
+  seconds = 0;
   document.getElementById('winBanner').classList.remove('show');
   updateStatText();
   updateBestRow();
@@ -747,6 +1116,31 @@ function newGame(level) {
   solution = full;
   puzzle = p.map(row => row.slice());
   givenMask = puzzle.map(row => row.map(v => v !== 0));
+  notes = emptyNotes();
+
+  renderBoard();
+  resetTimer();
+  saveGame();
+}
+
+function resumeGame(data) {
+  currentLevel = data.currentLevel || 'medium';
+  document.querySelectorAll('.difficulty button').forEach(b => {
+    b.classList.toggle('active', b.dataset.level === currentLevel);
+  });
+  gameWon = false;
+  selected = null;
+  mistakes = data.mistakes || 0;
+  hintsUsed = data.hintsUsed || 0;
+  seconds = data.seconds || 0;
+  document.getElementById('winBanner').classList.remove('show');
+  updateStatText();
+  updateBestRow();
+
+  solution = data.solution;
+  puzzle = data.puzzle;
+  givenMask = data.givenMask;
+  notes = data.notes || emptyNotes();
 
   renderBoard();
   resetTimer();
@@ -757,12 +1151,27 @@ document.getElementById('newGameBtn').addEventListener('click', () => newGame())
 document.querySelectorAll('.difficulty button').forEach(btn => {
   btn.addEventListener('click', () => newGame(btn.dataset.level));
 });
+document.getElementById('dailyPlayBtn').addEventListener('click', startDailyChallenge);
+document.getElementById('exitDailyLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  exitDailyMode();
+});
 
 buildBoardDOM();
 buildPaletteDOM();
+loadSettings();
 buildActionRowDOM();
 buildLegendDOM();
-newGame('medium');
+totalScore = loadTotalScore();
+updateScoreRow();
+updateDailyUI();
+
+const savedGame = loadGame();
+if (savedGame) {
+  resumeGame(savedGame);
+} else {
+  newGame('medium');
+}
 
 // ---------- 배경음악 ----------
 (function () {
@@ -798,10 +1207,14 @@ newGame('medium');
       audio.volume = 0;
       audio.play().then(() => {
         fadeVolume(TARGET_VOLUME, 1500);
-      }).catch(() => {});
-      btn.textContent = '⏸️';
-      btn.classList.add('playing');
-      isPlaying = true;
+        btn.textContent = '⏸️';
+        btn.classList.add('playing');
+        isPlaying = true;
+      }).catch((err) => {
+        btn.textContent = '⚠️';
+        setTimeout(() => { btn.textContent = '▶️'; }, 1500);
+        console.warn('배경음악 재생 실패:', err);
+      });
     } else {
       fadeVolume(0, 700, () => audio.pause());
       btn.textContent = '▶️';
