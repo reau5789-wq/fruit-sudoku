@@ -708,7 +708,7 @@
         <li>가로줄·세로줄·3×3 박스 각각에 9가지 열매가 한 번씩만 들어가야 해요.</li>
         <li>같은 열매를 두 번 넣으면 규칙 위반으로 빨간색 표시가 떠요.</li>
         <li>↩️되돌리기로 방금 입력을 한 단계 취소할 수 있어요.</li>
-        <li>막히면 💡힌트로 정답 한 칸을 확인할 수 있어요 (힌트를 쓰면 최고기록에는 반영되지 않아요).</li>
+        <li>막히면 💡힌트로 정답 한 칸을 확인할 수 있어요 (게임당 최대 3회, 힌트를 쓰면 최고기록에는 반영되지 않아요).</li>
         <li>✏️메모를 켜면 빈 칸에 후보 열매를 작게 적어둘 수 있어요.</li>
       </ul>
     </div>
@@ -877,6 +877,7 @@ let seconds = 0;
 let gameWon = false;
 let mistakes = 0;
 let hintsUsed = 0;
+const MAX_HINTS = 3; // 게임당 힌트 사용 가능 횟수
 let notes = [];          // 9x9, 각 칸은 length-10 boolean 배열 (인덱스 1~9 사용)
 let memoMode = false;
 let autoCheck = true;
@@ -1270,6 +1271,7 @@ function buildActionRowDOM() {
 
   const hint = document.createElement('div');
   hint.className = 'fruit-btn hint';
+  hint.id = 'hintBtn';
   hint.innerHTML = `<span class="emoji">💡</span><span>힌트</span>`;
   hint.addEventListener('click', giveHint);
   row.appendChild(hint);
@@ -1444,6 +1446,7 @@ function placeValue(val) {
 
 function giveHint() {
   if (gameWon) return;
+  if (hintsUsed >= MAX_HINTS) return;
   // "고쳐야 할 칸" = 처음부터 주어진 칸이 아니면서, 정답과 다른 칸(빈 칸 포함)
   function needsFix(r, c) {
     return !givenMask[r][c] && puzzle[r][c] !== solution[r][c];
@@ -1474,7 +1477,13 @@ function updateStatText() {
   const mEl = document.getElementById('mistakeText');
   mEl.textContent = `실수 ${mistakes}회`;
   mEl.classList.toggle('warn', mistakes > 0);
-  document.getElementById('hintText').textContent = `힌트 ${hintsUsed}회`;
+  document.getElementById('hintText').textContent = `힌트 ${hintsUsed}/${MAX_HINTS}회`;
+  updateHintButtonState();
+}
+
+function updateHintButtonState() {
+  const btn = document.getElementById('hintBtn');
+  if (btn) btn.classList.toggle('disabled', hintsUsed >= MAX_HINTS || gameWon);
 }
 
 function checkWin() {
