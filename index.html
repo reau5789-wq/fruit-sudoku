@@ -8,6 +8,8 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>성령의 열매 스도쿠</title>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <style>
   :root {
     --bg-1: #3b2415;
@@ -294,6 +296,110 @@
     font-weight: 800;
     margin-bottom: 14px;
   }
+  .ranking-btn-row {
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .ranking-btn {
+    background: linear-gradient(135deg, var(--accent), #d97a3f);
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 9px 22px;
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  }
+  .ranking-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .ranking-tab {
+    flex: 1;
+    min-width: 70px;
+    border: 2px solid var(--accent);
+    background: var(--accent-light);
+    color: var(--accent-dark);
+    padding: 7px 4px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    text-align: center;
+  }
+  .ranking-tab.active {
+    background: var(--accent);
+    color: #fff;
+  }
+  .ranking-list { min-height: 120px; }
+  .ranking-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 6px;
+    border-bottom: 1px solid #eee0cb;
+    font-size: 13.5px;
+  }
+  .ranking-row.me {
+    background: var(--accent-light);
+    border-radius: 8px;
+  }
+  .ranking-rank {
+    width: 26px;
+    font-weight: 800;
+    color: var(--accent-dark);
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .ranking-nick {
+    flex: 1;
+    font-weight: 700;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ranking-score {
+    font-weight: 800;
+    color: var(--accent-dark);
+    flex-shrink: 0;
+  }
+  .ranking-empty, .ranking-loading {
+    text-align: center;
+    color: #a3835a;
+    font-size: 13px;
+    padding: 20px 0;
+  }
+  .nickname-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    font-size: 14px;
+    margin: 10px 0;
+    box-sizing: border-box;
+  }
+  .nickname-save-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 11px;
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .my-nick-row {
+    text-align: center;
+    font-size: 12px;
+    color: #a3835a;
+    margin-top: 10px;
+  }
+  .my-nick-row a { color: var(--accent-dark); font-weight: 700; }
 
   .verse {
     text-align: center;
@@ -606,6 +712,17 @@
     </div>
 
     <div class="modal-section">
+      <h3>🏆 기록 · 점수 · 일일 도전</h3>
+      <ul>
+        <li>난이도별로 힌트 없이 완료한 최단 시간이 "최고 기록"으로 저장돼요.</li>
+        <li>완료할 때마다 시간·실수·힌트 수에 따라 점수가 계산되어 "총점"에 누적돼요.</li>
+        <li>📅 오늘의 도전은 그날 하루만 나오는 고정 퍼즐이에요. 매일 완료하면 🔥연속 스트릭이 하루씩 올라가요.</li>
+        <li>🏆 닉네임을 정하면 전체 랭킹(누적 총점 · 난이도별 단판 최고점)에 참여할 수 있어요.</li>
+        <li>최고기록·총점은 지금 쓰시는 기기(브라우저)에만 저장돼요. 다른 기기로 접속하면 따로 시작돼요.</li>
+      </ul>
+    </div>
+
+    <div class="modal-section">
       <h3>⚙️ 게임 설정</h3>
       <div class="modal-toggle-row">
         <span class="label">✏️ 메모 모드</span>
@@ -620,10 +737,41 @@
 
     <div class="modal-section">
       <h3>ℹ️ 게임 정보</h3>
-      <p>🕊️ 성령의 열매 스도쿠 · v1.1</p>
+      <p>🕊️ 성령의 열매 스도쿠 · v1.2</p>
       <a class="modal-link" href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a>
       <p class="modal-meta">© 2026 Barista of Soul. All Rights Reserved.</p>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="rankingModal">
+  <div class="modal-panel">
+    <div class="modal-header">
+      <h2>🏆 전체 랭킹</h2>
+      <button class="modal-close" id="rankingCloseBtn">✕</button>
+    </div>
+    <div class="ranking-tabs">
+      <div class="ranking-tab active" data-field="totalScore">누적총점</div>
+      <div class="ranking-tab" data-field="bestEasy">쉬움 단판</div>
+      <div class="ranking-tab" data-field="bestMedium">보통 단판</div>
+      <div class="ranking-tab" data-field="bestHard">어려움 단판</div>
+    </div>
+    <div class="ranking-list" id="rankingList">
+      <div class="ranking-loading">불러오는 중...</div>
+    </div>
+    <div class="my-nick-row" id="myNickRow"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="nicknameModal">
+  <div class="modal-panel">
+    <div class="modal-header">
+      <h2>🏆 닉네임 설정</h2>
+      <button class="modal-close" id="nicknameCloseBtn">✕</button>
+    </div>
+    <p style="font-size:13px; color:var(--text);">전체 랭킹에 표시될 닉네임을 정해주세요 (실명 대신 별명을 추천드려요).</p>
+    <input type="text" id="nicknameInput" class="nickname-input" placeholder="예: 믿음이" maxlength="12">
+    <button class="nickname-save-btn" id="nicknameSaveBtn">저장하고 랭킹 참여</button>
   </div>
 </div>
 
@@ -670,6 +818,9 @@
   <div class="secondary">
     <div class="best-row" id="bestRow"></div>
     <div class="score-row" id="scoreRow">🍇 총점: 0점</div>
+    <div class="ranking-btn-row">
+      <button class="ranking-btn" id="openRankingBtn">🏆 전체 랭킹 보기</button>
+    </div>
 
     <div class="verse">"오직 성령의 열매는 사랑과 희락과 화평과 참음과 자비와 양선과 충성과 온유와 절제니 이같은 것을 금지할 법이 없느니라"<span class="ref">-갈라디아서 5:22~23-</span></div>
 
@@ -1358,6 +1509,7 @@ function checkWin() {
   totalScore += score;
   saveTotalScore(totalScore);
   updateScoreRow();
+  submitScoreToLeaderboard(score, dailyMode ? 'medium' : currentLevel);
 
   const recordEl = document.getElementById('recordMsg');
   if (dailyMode) {
@@ -1483,6 +1635,176 @@ settingsModal.addEventListener('click', (e) => {
 });
 document.getElementById('modalMemoSwitch').addEventListener('click', toggleMemoMode);
 document.getElementById('modalAutoCheckSwitch').addEventListener('click', toggleAutoCheck);
+
+// ---------- 랭킹 (Firebase Firestore) ----------
+const firebaseConfig = {
+  apiKey: "AIzaSyAXs_BXsCHjRhjJPSYhBxaoWNajZYNTl38",
+  authDomain: "fruit-sudoku-ranking.firebaseapp.com",
+  projectId: "fruit-sudoku-ranking",
+  storageBucket: "fruit-sudoku-ranking.firebasestorage.app",
+  messagingSenderId: "79379730255",
+  appId: "1:79379730255:web:83467e87a696db4254ff3a"
+};
+let db = null;
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+} catch (e) {
+  console.warn('Firebase 초기화 실패:', e);
+}
+
+const PLAYER_ID_KEY = 'fruitSudokuPlayerId';
+const NICKNAME_KEY = 'fruitSudokuNickname';
+
+function getPlayerId() {
+  let id = localStorage.getItem(PLAYER_ID_KEY);
+  if (!id) {
+    id = 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+    localStorage.setItem(PLAYER_ID_KEY, id);
+  }
+  return id;
+}
+function getNickname() {
+  return localStorage.getItem(NICKNAME_KEY) || '';
+}
+function setNickname(name) {
+  localStorage.setItem(NICKNAME_KEY, name);
+}
+
+let pendingSubmit = null; // 닉네임 입력 전 대기 중인 점수 제출 정보
+
+function submitScoreToLeaderboard(score, difficultyKey) {
+  if (!db) return;
+  const nickname = getNickname();
+  if (!nickname) {
+    pendingSubmit = { score, difficultyKey };
+    openNicknameModal();
+    return;
+  }
+  doSubmitScore(score, difficultyKey, nickname);
+}
+
+function doSubmitScore(score, difficultyKey, nickname) {
+  if (!db) return;
+  const playerId = getPlayerId();
+  const playerRef = db.collection('players').doc(playerId);
+  const bestField = 'best' + difficultyKey.charAt(0).toUpperCase() + difficultyKey.slice(1);
+
+  db.runTransaction(async (tx) => {
+    const doc = await tx.get(playerRef);
+    const data = doc.exists ? doc.data() : { totalScore: 0, bestEasy: 0, bestMedium: 0, bestHard: 0 };
+    data.nickname = nickname;
+    data.totalScore = (data.totalScore || 0) + score;
+    if (!data[bestField] || score > data[bestField]) data[bestField] = score;
+    data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+    tx.set(playerRef, data, { merge: true });
+  }).catch((e) => console.warn('점수 제출 실패:', e));
+}
+
+function openNicknameModal() {
+  const modal = document.getElementById('nicknameModal');
+  document.getElementById('nicknameInput').value = getNickname();
+  modal.classList.add('show');
+}
+function closeNicknameModal() {
+  document.getElementById('nicknameModal').classList.remove('show');
+}
+
+document.getElementById('nicknameCloseBtn').addEventListener('click', () => {
+  pendingSubmit = null;
+  closeNicknameModal();
+});
+document.getElementById('nicknameModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('nicknameModal')) {
+    pendingSubmit = null;
+    closeNicknameModal();
+  }
+});
+document.getElementById('nicknameSaveBtn').addEventListener('click', () => {
+  const val = document.getElementById('nicknameInput').value.trim();
+  if (!val) return;
+  setNickname(val);
+  closeNicknameModal();
+  if (pendingSubmit) {
+    doSubmitScore(pendingSubmit.score, pendingSubmit.difficultyKey, val);
+    pendingSubmit = null;
+  }
+  const rankingModal = document.getElementById('rankingModal');
+  if (rankingModal.classList.contains('show')) loadRanking(currentRankingField);
+});
+
+let currentRankingField = 'totalScore';
+function openRankingModal() {
+  document.getElementById('rankingModal').classList.add('show');
+  loadRanking(currentRankingField);
+}
+function closeRankingModal() {
+  document.getElementById('rankingModal').classList.remove('show');
+}
+document.getElementById('openRankingBtn').addEventListener('click', openRankingModal);
+document.getElementById('rankingCloseBtn').addEventListener('click', closeRankingModal);
+document.getElementById('rankingModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('rankingModal')) closeRankingModal();
+});
+document.querySelectorAll('.ranking-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.ranking-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentRankingField = tab.dataset.field;
+    loadRanking(currentRankingField);
+  });
+});
+
+function loadRanking(field) {
+  const listEl = document.getElementById('rankingList');
+  const nickRow = document.getElementById('myNickRow');
+  listEl.innerHTML = '<div class="ranking-loading">불러오는 중...</div>';
+
+  const myNick = getNickname();
+  nickRow.innerHTML = myNick
+    ? `내 닉네임: <strong>${myNick}</strong> · <a href="#" id="changeNickLink">닉네임 변경</a>`
+    : `<a href="#" id="changeNickLink">닉네임을 정하고 랭킹에 참여해보세요</a>`;
+  const changeLink = document.getElementById('changeNickLink');
+  if (changeLink) changeLink.addEventListener('click', (e) => { e.preventDefault(); openNicknameModal(); });
+
+  if (!db) {
+    listEl.innerHTML = '<div class="ranking-empty">랭킹을 불러올 수 없어요. 인터넷 연결을 확인해주세요.</div>';
+    return;
+  }
+
+  db.collection('players').orderBy(field, 'desc').limit(20).get()
+    .then(snapshot => {
+      if (snapshot.empty) {
+        listEl.innerHTML = '<div class="ranking-empty">아직 랭킹에 참여한 사람이 없어요. 첫 주인공이 되어보세요! 🎉</div>';
+        return;
+      }
+      const myId = getPlayerId();
+      let html = '';
+      let rank = 0;
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        const val = d[field];
+        if (val === undefined || val === null) return;
+        rank++;
+        const isMe = doc.id === myId;
+        html += `<div class="ranking-row ${isMe ? 'me' : ''}">
+          <span class="ranking-rank">${rank}</span>
+          <span class="ranking-nick">${escapeHtml(d.nickname || '익명')}${isMe ? ' (나)' : ''}</span>
+          <span class="ranking-score">${val}점</span>
+        </div>`;
+      });
+      listEl.innerHTML = html || '<div class="ranking-empty">아직 이 부문 기록이 없어요.</div>';
+    })
+    .catch(e => {
+      console.warn('랭킹 로드 실패:', e);
+      listEl.innerHTML = '<div class="ranking-empty">랭킹을 불러오지 못했어요. 잠시 후 다시 시도해주세요.</div>';
+    });
+}
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
 
 // ---------- 인트로 영상 ----------
 (function () {
