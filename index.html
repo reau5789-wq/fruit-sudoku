@@ -152,52 +152,39 @@
     font-size: clamp(13px, 3.4vw, 22px);
     line-height: 1;
   }
-  .cell .fruit-name {
-    font-size: clamp(6.5px, 1.8vw, 10px);
-    line-height: 1;
-    color: var(--given);
-    font-weight: 800;
-    letter-spacing: -0.3px;
-    white-space: nowrap;
-  }
-  .fruit-badge {
-    width: 88%;
-    height: 88%;
-    border-radius: 22%;
+  /* 열매 아이콘 공통 컴포넌트: 테두리/박스 없이 아이콘 자체가 색을 가지며,
+     이름 텍스트는 아이콘 위에 겹쳐서 표시된다. 셀/팔레트/범례 어디서든 동일하게 사용. */
+  .fruit-icon-wrap {
+    position: relative;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1px;
-    box-sizing: border-box;
-    transition: filter 0.15s;
-  }
-  .fruit-badge .fruit-icon {
-    width: 54%;
-    height: 54%;
-    display: block;
+    color: var(--fcolor);
     flex-shrink: 0;
   }
-  .fruit-badge .fruit-label {
-    font-size: clamp(6.5px, 1.7vw, 9.5px);
+  .fruit-icon-wrap svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .fruit-icon-wrap .fruit-label {
+    position: absolute;
     font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.3px;
-    white-space: nowrap;
-  }
-  .fruit-badge.given {
-    background: var(--fcolor);
     color: #fff;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.18);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.55), 0 0 3px rgba(0,0,0,0.35);
+    white-space: nowrap;
+    letter-spacing: -0.3px;
+    pointer-events: none;
   }
-  .fruit-badge.given .fruit-label { text-shadow: 0 1px 2px rgba(0,0,0,0.35); }
-  .fruit-badge.user {
-    background: #fff;
-    color: var(--fcolor);
-    border: 2.5px solid var(--fcolor);
+  .cell .fruit-icon-wrap {
+    width: 90%;
+    height: 90%;
   }
-  .cell.conflict .fruit-badge { filter: brightness(0.82) saturate(1.3); }
-  .cell.hint-pop .fruit-badge { animation: pop 0.35s ease; }
+  .cell .fruit-icon-wrap .fruit-label {
+    font-size: clamp(7px, 2vw, 10.5px);
+  }
+  .cell.conflict .fruit-icon-wrap { filter: brightness(0.82) saturate(1.3); }
+  .cell.hint-pop .fruit-icon-wrap { animation: pop 0.35s ease; }
   .cell-notes {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -214,14 +201,10 @@
     color: #a3835a;
   }
   .cell.given { background: #f2e6d0; cursor: default; }
-  .cell.given .emoji { filter: none; }
-  .cell.given .fruit-name { font-weight: 800; color: var(--given); }
-  .cell.user .emoji { opacity: 1; }
-  .cell.user .fruit-name { color: var(--user); font-weight: 700; }
+  .cell.user { background: #fffdf8; }
   .cell.same-value { background: #ffe0a3 !important; }
   .cell.selected { background: var(--selected) !important; }
   .cell.peer { background: var(--peer); }
-  .cell.conflict .emoji { filter: drop-shadow(0 0 0 var(--conflict)); }
   .cell.conflict { background: #ff9d92 !important; border: 2px solid var(--conflict); }
   .cell.hint-pop { animation: pop 0.35s ease; }
   .cell.mistake-flash { animation: shakeRed 0.45s ease; }
@@ -264,7 +247,8 @@
     color: var(--accent-dark);
     font-weight: 800;
   }
-  .fruit-btn .emoji { font-size: 18px; }
+  .fruit-btn .fruit-icon-wrap { width: 30px; height: 30px; }
+  .fruit-btn .fruit-icon-wrap .fruit-label { font-size: 8px; }
   .fruit-btn:active { transform: scale(0.94); }
   .fruit-btn.disabled {
     opacity: 0.3;
@@ -501,6 +485,8 @@
   }
   .legend div { display: flex; align-items: center; gap: 5px; }
   .legend .emoji { font-size: 15px; }
+  .legend .fruit-icon-wrap { width: 22px; height: 22px; }
+  .legend .fruit-icon-wrap .fruit-label { font-size: 6.5px; }
 
   footer.note {
     text-align: center;
@@ -1251,7 +1237,7 @@ function buildPaletteDOM() {
     const btn = document.createElement('div');
     btn.className = 'fruit-btn';
     btn.dataset.value = idx + 1;
-    btn.innerHTML = `<span class="emoji">${f.emoji}</span><span>${f.name}</span>`;
+    btn.innerHTML = `<span class="fruit-icon-wrap" style="--fcolor:${f.color}"><svg viewBox="0 0 100 100">${f.icon}</svg><span class="fruit-label">${f.name}</span></span>`;
     btn.addEventListener('click', () => handleFruitClick(idx + 1));
     palette.appendChild(btn);
   });
@@ -1327,7 +1313,7 @@ function buildLegendDOM() {
   legend.innerHTML = '';
   FRUITS.forEach(f => {
     const div = document.createElement('div');
-    div.innerHTML = `<span class="emoji">${f.emoji}</span><span>${f.name}</span>`;
+    div.innerHTML = `<span class="fruit-icon-wrap" style="--fcolor:${f.color}"><svg viewBox="0 0 100 100">${f.icon}</svg><span class="fruit-label">${f.name}</span></span>`;
     legend.appendChild(div);
   });
 }
@@ -1342,19 +1328,19 @@ function renderBoard() {
     if (val !== 0) {
       const f = FRUITS[val - 1];
       const isGiven = givenMask[r][c];
-      el.style.setProperty('--fcolor', f.color);
-      const badge = document.createElement('div');
-      badge.className = 'fruit-badge ' + (isGiven ? 'given' : 'user');
-      badge.innerHTML = `<svg class="fruit-icon" viewBox="0 0 100 100">${f.icon}</svg><span class="fruit-label">${f.name}</span>`;
+      const wrap = document.createElement('span');
+      wrap.className = 'fruit-icon-wrap';
+      wrap.style.setProperty('--fcolor', f.color);
+      wrap.innerHTML = `<svg viewBox="0 0 100 100">${f.icon}</svg><span class="fruit-label">${f.name}</span>`;
       el.title = f.name;
-      el.appendChild(badge);
+      el.appendChild(wrap);
       el.classList.add(isGiven ? 'given' : 'user');
     } else if (notes[r][c] && notes[r][c].some(v => v)) {
       const grid = document.createElement('div');
       grid.className = 'cell-notes';
       for (let n = 1; n <= 9; n++) {
         const span = document.createElement('span');
-        span.textContent = notes[r][c][n] ? FRUITS[n-1].emoji : '';
+        span.innerHTML = notes[r][c][n] ? `<i style="display:block;width:62%;height:62%;border-radius:50%;background:${FRUITS[n-1].color}"></i>` : '';
         grid.appendChild(span);
       }
       el.appendChild(grid);
