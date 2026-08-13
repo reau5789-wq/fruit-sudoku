@@ -229,7 +229,7 @@
 
   .palette {
     display: grid;
-    grid-template-columns: repeat(9, 1fr);
+    grid-template-columns: repeat(9, minmax(0, 1fr));
     gap: 5px;
     margin-top: 12px;
   }
@@ -246,9 +246,11 @@
     font-size: 10px;
     color: var(--accent-dark);
     font-weight: 800;
+    box-sizing: border-box;
+    min-width: 0;
   }
-  .fruit-btn .fruit-icon-wrap { width: 30px; height: 30px; }
-  .fruit-btn .fruit-icon-wrap .fruit-label { font-size: 8px; }
+  .fruit-btn .fruit-icon-wrap { width: 78%; aspect-ratio: 1 / 1; }
+  .fruit-btn .fruit-icon-wrap .fruit-label { font-size: 7.5px; }
   .fruit-btn:active { transform: scale(0.94); }
   .fruit-btn.disabled {
     opacity: 0.3;
@@ -860,21 +862,21 @@
 // ---- 성령의 9가지 열매 (갈 5:22-23) ----
 const FRUITS = [
   { name: "사랑", emoji: "❤️", color: "#E63946",
-    icon: '<path fill="currentColor" d="M50 82 C24 62 14 46 14 31 C14 17 25 8 37 11 C44 13 48 19 50 25 C52 19 56 13 63 11 C75 8 86 17 86 31 C86 46 76 62 50 82 Z"/>' },
+    icon: '<path fill="currentColor" d="M50 95 C18 68 4 46 4 27 C4 9 19 -2 35 3 C43 5 48 13 50 21 C52 13 57 5 65 3 C81 -2 96 9 96 27 C96 46 82 68 50 95 Z"/>' },
   { name: "희락", emoji: "😊", color: "#F4A300",
-    icon: '<circle cx="50" cy="50" r="19" fill="currentColor"/><g stroke="currentColor" stroke-width="8" stroke-linecap="round"><line x1="50" y1="6" x2="50" y2="20"/><line x1="50" y1="80" x2="50" y2="94"/><line x1="6" y1="50" x2="20" y2="50"/><line x1="80" y1="50" x2="94" y2="50"/><line x1="18" y1="18" x2="27" y2="27"/><line x1="73" y1="73" x2="82" y2="82"/><line x1="82" y1="18" x2="73" y2="27"/><line x1="27" y1="73" x2="18" y2="82"/></g>' },
+    icon: '<circle cx="50" cy="50" r="29" fill="currentColor"/><g stroke="currentColor" stroke-width="9" stroke-linecap="round"><line x1="50" y1="12" x2="50" y2="19"/><line x1="50" y1="81" x2="50" y2="88"/><line x1="12" y1="50" x2="19" y2="50"/><line x1="81" y1="50" x2="88" y2="50"/><line x1="23" y1="23" x2="28" y2="28"/><line x1="72" y1="72" x2="77" y2="77"/><line x1="77" y1="23" x2="72" y2="28"/><line x1="28" y1="72" x2="23" y2="77"/></g>' },
   { name: "화평", emoji: "🕊️", color: "#4CC9F0",
-    icon: '<path fill="currentColor" d="M18 62 C18 46 32 34 48 36 L50 26 L58 32 L50 38 C62 42 68 52 64 62 C60 72 46 76 36 70 L16 78 L24 64 C20 63 18 63 18 62 Z"/>' },
-  { name: "참음", emoji: "⏳", color: "#A0522D",
-    icon: '<path fill="currentColor" fill-rule="evenodd" d="M26 14 H74 C77 14 77 18 74 18 L74 22 C74 34 64 40 55 46 C64 52 74 58 74 70 L74 74 C77 74 77 78 74 78 H26 C23 78 23 74 26 74 L26 70 C26 58 36 52 45 46 C36 40 26 34 26 22 L26 18 C23 18 23 14 26 14 Z"/>' },
-  { name: "자비", emoji: "🤲", color: "#FF8C42",
-    icon: '<path fill="currentColor" d="M50 18 C54 18 57 22 56 27 L52 40 L48 40 L44 27 C43 22 46 18 50 18 Z M22 52 C22 43 29 37 37 39 C40 30 51 28 57 35 C67 33 76 41 74 52 C80 56 79 65 72 69 C69 78 56 81 48 74 C39 80 26 75 24 64 C18 62 17 56 22 52 Z"/>' },
+    icon: '<path fill="currentColor" d="M2 76 C24 28 43 58 50 34 C57 58 76 28 98 76 C76 52 60 68 50 46 C40 68 24 52 2 76 Z"/>' },
+  { name: "참음", emoji: "☕", color: "#8B5A2B",
+    icon: '<path fill="currentColor" fill-rule="evenodd" d="M50 3 C75 3 96 24 96 50 C96 76 75 97 50 97 C25 97 4 76 4 50 C4 24 25 3 50 3 Z M50 15 C55 29 43 40 50 50 C43 60 55 71 50 85 C45 71 57 60 50 50 C57 40 45 29 50 15 Z"/>' },
+  { name: "자비", emoji: "🍊", color: "#FF8C42",
+    icon: '<circle cx="50" cy="50" r="46" fill="currentColor"/>' },
   { name: "양선", emoji: "🌾", color: "#8AC926",
-    icon: '<path fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" d="M50 86 V46"/><path fill="currentColor" d="M50 46 C30 46 18 30 18 14 C40 14 50 26 50 46 Z"/><path fill="currentColor" d="M50 46 C70 46 82 30 82 14 C60 14 50 26 50 46 Z"/>' },
+    icon: '<path fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" d="M50 92 V58"/><path fill="currentColor" d="M50 58 C14 58 2 30 2 4 C42 4 58 24 50 58 Z"/><path fill="currentColor" d="M50 58 C86 58 98 30 98 4 C58 4 42 24 50 58 Z"/>' },
   { name: "충성", emoji: "🛡️", color: "#3A5A78",
-    icon: '<path fill="currentColor" d="M50 12 L82 24 V48 C82 68 68 82 50 90 C32 82 18 68 18 48 V24 Z"/>' },
+    icon: '<path fill="currentColor" d="M50 2 L97 17 V45 C97 72 78 92 50 99 C22 92 3 72 3 45 V17 Z"/>' },
   { name: "온유", emoji: "🌿", color: "#2A9D8F",
-    icon: '<path fill="currentColor" d="M22 78 C22 40 50 16 84 16 C84 54 56 78 22 78 Z"/>' },
+    icon: '<path fill="currentColor" d="M4 97 C4 44 44 4 97 4 C97 57 57 97 4 97 Z"/>' },
   { name: "절제", emoji: "⚖️", color: "#6A4C93",
     icon: '<g stroke="currentColor" stroke-width="7" stroke-linecap="round" fill="currentColor"><line x1="50" y1="14" x2="50" y2="78"/><line x1="22" y1="26" x2="78" y2="26"/><path d="M22 26 L10 50 C10 58 34 58 34 50 Z"/><path d="M78 26 L66 50 C66 58 90 58 90 50 Z"/><rect x="34" y="82" width="32" height="6" rx="3"/></g>' },
 ];
