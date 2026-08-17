@@ -207,6 +207,15 @@
   .cell.peer { background: var(--peer); }
   .cell.conflict { background: #ff9d92 !important; border: 2px solid var(--conflict); }
   .cell.hint-pop { animation: pop 0.35s ease; }
+  .cell.line-complete-flash {
+    animation: lineComplete 0.85s ease;
+    z-index: 5;
+  }
+  @keyframes lineComplete {
+    0% { box-shadow: 0 0 0 rgba(255,206,84,0); transform: scale(1); }
+    35% { box-shadow: 0 0 13px 4px rgba(255,206,84,0.9); transform: scale(1.06); }
+    100% { box-shadow: 0 0 0 rgba(255,206,84,0); transform: scale(1); }
+  }
   .cell.mistake-flash { animation: shakeRed 0.45s ease; }
   @keyframes shakeRed {
     0%, 100% { transform: translateX(0); background: #fffdf8; }
@@ -735,6 +744,7 @@
         <li>빈 칸을 선택한 뒤, 아래 열매 버튼을 눌러 채워요.</li>
         <li>가로줄·세로줄·3×3 박스 각각에 9가지 열매가 한 번씩만 들어가야 해요.</li>
         <li>같은 열매를 두 번 넣으면 규칙 위반으로 빨간색 표시가 떠요.</li>
+        <li>🎉 가로줄·세로줄·3×3 박스를 하나 완성할 때마다 반짝이는 효과와 '할렐루야' 효과음이 나와요.</li>
         <li>↩️되돌리기로 방금 입력을 취소할 수 있어요 (게임당 최대 9회까지 가능해요. 9회를 모두 사용하면 게임이 종료되며 점수는 반영되지 않아요).</li>
         <li>막히면 💡힌트로 정답 한 칸을 확인할 수 있어요 (게임당 최대 3회, 힌트를 쓰면 최고기록에는 반영되지 않아요).</li>
         <li>✏️메모를 켜면 빈 칸에 후보 열매를 작게 적어둘 수 있어요.</li>
@@ -927,6 +937,79 @@ let memoMode = false;
 let autoCheck = true;
 let dailyMode = false;
 let totalScore = 0;
+let completedLines = new Set(); // 완성된 가로줄/세로줄/3x3박스: 'r0'~'r8', 'c0'~'c8', 'b0'~'b8'
+
+// ---------- 줄/박스 완성 이펙트 + 할렐루야 효과음 ----------
+function getLineCells(type, idx) {
+  const cells = [];
+  if (type === 'r') { for (let c = 0; c < 9; c++) cells.push([idx, c]); }
+  else if (type === 'c') { for (let r = 0; r < 9; r++) cells.push([r, idx]); }
+  else { const br = Math.floor(idx/3)*3, bc = (idx%3)*3;
+    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) cells.push([br+i, bc+j]); }
+  return cells;
+}
+function isLineComplete(type, idx) {
+  return getLineCells(type, idx).every(([r,c]) => puzzle[r][c] !== 0 && puzzle[r][c] === solution[r][c]);
+}
+function flashLine(type, idx) {
+  getLineCells(type, idx).forEach(([r,c]) => {
+    const el = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+    if (el) {
+      el.classList.remove('line-complete-flash');
+      void el.offsetWidth;
+      el.classList.add('line-complete-flash');
+    }
+  });
+}
+function syncCompletedLines(triggerEffects) {
+  const newly = [];
+  ['r','c','b'].forEach(type => {
+    for (let i = 0; i < 9; i++) {
+      const key = type + i;
+      const complete = isLineComplete(type, i);
+      if (complete && !completedLines.has(key)) {
+        completedLines.add(key);
+        newly.push({ type, idx: i });
+      } else if (!complete && completedLines.has(key)) {
+        completedLines.delete(key);
+      }
+    }
+  });
+  if (triggerEffects && newly.length > 0) {
+    newly.forEach(({type, idx}) => flashLine(type, idx));
+    playHallelujah(false);
+  }
+  return newly;
+}
+function playHallelujah(big) {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!window.__sudokuAudioCtx) window.__sudokuAudioCtx = new AudioCtx();
+    const ctx = window.__sudokuAudioCtx;
+    if (ctx.state === 'suspended') ctx.resume();
+    const now = ctx.currentTime;
+    // "할-렐-루-야" 리듬(같은 음 4번 반복 후 상승)을 딴 짧은 팡파르
+    const notes = big
+      ? [523.25, 523.25, 523.25, 523.25, 587.33, 659.25, 698.46, 783.99]
+      : [523.25, 523.25, 523.25, 523.25, 659.25];
+    const dur = big ? 0.16 : 0.13;
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      const start = now + i * dur;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.28, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + dur * 0.95);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + dur);
+    });
+  } catch (e) { /* 오디오 재생 실패는 무시 (게임 진행에 영향 없음) */ }
+}
 
 function emptyNotes() {
   return Array.from({length:9}, () => Array.from({length:9}, () => Array(10).fill(false)));
@@ -1073,6 +1156,7 @@ function startDailyChallenge() {
   puzzle = p.map(row => row.slice());
   givenMask = puzzle.map(row => row.map(v => v !== 0));
   notes = emptyNotes();
+  completedLines = new Set();
 
   gameWon = false;
   gameOver = false;
@@ -1091,6 +1175,7 @@ function startDailyChallenge() {
   document.querySelectorAll('.difficulty button').forEach(b => b.classList.remove('active'));
 
   renderBoard();
+  syncCompletedLines(false);
   resetTimer();
 }
 
@@ -1457,6 +1542,7 @@ function undoMove() {
   updateStatText();
   renderBoard();
   saveGame();
+  syncCompletedLines(false);
   document.getElementById('fullBoardWarning').style.display = 'none';
   updateUndoButtonState();
 
@@ -1500,6 +1586,7 @@ function placeValue(val) {
   if (val !== 0) clearNotesForValue(r, c, val);
   renderBoard();
   saveGame();
+  syncCompletedLines(val !== 0 && !wasMistake);
   checkWin();
 }
 
@@ -1527,6 +1614,7 @@ function giveHint() {
   updateStatText();
   renderBoard();
   saveGame();
+  syncCompletedLines(true);
   const el = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
   if (el) el.classList.add('hint-pop');
   checkWin();
@@ -1571,6 +1659,7 @@ function checkWin() {
   clearInterval(timerInterval);
   clearSave();
   document.getElementById('winBanner').classList.add('show');
+  playHallelujah(true);
 
   const score = computeScore(dailyMode ? 'medium' : currentLevel);
   totalScore += score;
@@ -1649,8 +1738,10 @@ function newGame(level) {
   puzzle = p.map(row => row.slice());
   givenMask = puzzle.map(row => row.map(v => v !== 0));
   notes = emptyNotes();
+  completedLines = new Set();
 
   renderBoard();
+  syncCompletedLines(false);
   resetTimer();
   saveGame();
 }
@@ -1678,8 +1769,10 @@ function resumeGame(data) {
   puzzle = data.puzzle;
   givenMask = data.givenMask;
   notes = data.notes || emptyNotes();
+  completedLines = new Set();
 
   renderBoard();
+  syncCompletedLines(false);
   resetTimer();
 }
 
