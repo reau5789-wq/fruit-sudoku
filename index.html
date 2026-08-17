@@ -305,21 +305,19 @@
   .secondary {
     margin-top: 16px;
   }
-  .best-row {
-    text-align: center;
-    font-size: 13px;
-    color: #ffd9a8;
-    margin-bottom: 6px;
-    font-weight: 800;
-  }
-  .best-row .no-record { color: #cbb79a; font-weight: 600; }
-  .score-row {
-    text-align: center;
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 14px;
     font-size: 13px;
     color: #ffd9a8;
     font-weight: 800;
-    margin-bottom: 14px;
+    margin-bottom: 10px;
   }
+  .stats-row .best-row .no-record { color: #cbb79a; font-weight: 600; }
+  .stats-row .divider { color: #6b4a2e; }
   .ranking-btn-row {
     text-align: center;
     margin-bottom: 14px;
@@ -427,18 +425,20 @@
 
   .verse {
     text-align: center;
-    font-size: 12.5px;
-    color: #e9d9c2;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff3e0;
     margin: 6px 0 16px;
-    font-style: italic;
-    line-height: 1.6;
+    font-style: normal;
+    line-height: 1.75;
   }
   .verse .ref {
     display: block;
-    margin-top: 4px;
-    font-size: 11.5px;
+    margin-top: 6px;
+    font-size: 14.5px;
     font-style: normal;
-    color: #cbb79a;
+    font-weight: 700;
+    color: #e8c99a;
   }
 
   .daily-card {
@@ -646,6 +646,34 @@
     margin-top: 4px;
   }
 
+  .gameover-panel {
+    text-align: center;
+  }
+  .gameover-panel .gameover-title {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--conflict);
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  .gameover-panel p {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+    margin: 0 0 18px;
+  }
+  .gameover-panel .new-game-btn2 {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%;
+  }
+
   .intro-overlay {
     position: fixed;
     inset: 0;
@@ -707,7 +735,7 @@
         <li>빈 칸을 선택한 뒤, 아래 열매 버튼을 눌러 채워요.</li>
         <li>가로줄·세로줄·3×3 박스 각각에 9가지 열매가 한 번씩만 들어가야 해요.</li>
         <li>같은 열매를 두 번 넣으면 규칙 위반으로 빨간색 표시가 떠요.</li>
-        <li>↩️되돌리기로 방금 입력을 한 단계 취소할 수 있어요.</li>
+        <li>↩️되돌리기로 방금 입력을 취소할 수 있어요 (게임당 최대 9회까지 가능해요. 9회를 모두 사용하면 게임이 종료되며 점수는 반영되지 않아요).</li>
         <li>막히면 💡힌트로 정답 한 칸을 확인할 수 있어요 (게임당 최대 3회, 힌트를 쓰면 최고기록에는 반영되지 않아요).</li>
         <li>✏️메모를 켜면 빈 칸에 후보 열매를 작게 적어둘 수 있어요.</li>
       </ul>
@@ -718,6 +746,7 @@
       <ul>
         <li>난이도별로 힌트 없이 완료한 최단 시간이 "최고 기록"으로 저장돼요.</li>
         <li>완료할 때마다 시간·실수·힌트 수에 따라 점수가 계산되어 "총점"에 누적돼요.</li>
+        <li>되돌리기를 9회 모두 사용해 게임이 종료된 경우에는 점수가 반영되지 않아요.</li>
         <li>📅 오늘의 도전은 그날 하루만 나오는 고정 퍼즐이에요. 매일 완료하면 🔥연속 스트릭이 하루씩 올라가요.</li>
         <li>🏆 닉네임을 정하면 전체 랭킹(누적 총점 · 난이도별 단판 최고점)에 참여할 수 있어요.</li>
         <li>최고기록·총점은 지금 쓰시는 기기(브라우저)에만 저장돼요. 다른 기기로 접속하면 따로 시작돼요.</li>
@@ -739,7 +768,7 @@
 
     <div class="modal-section">
       <h3>ℹ️ 게임 정보</h3>
-      <p>🕊️ 성령의 열매 스도쿠 · v1.2</p>
+      <p>🕊️ 성령의 열매 스도쿠 · v1.3</p>
       <a class="modal-link" href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a>
       <p class="modal-meta">© 2026 Barista of Soul. All Rights Reserved.</p>
     </div>
@@ -777,6 +806,14 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="gameOverModal">
+  <div class="modal-panel gameover-panel">
+    <div class="gameover-title">☠️ GAME OVER</div>
+    <p>되돌리기를 9회 모두 사용해 게임이 종료되었습니다.<br>이번 게임의 점수는 반영되지 않아요.</p>
+    <button class="new-game-btn2" id="gameOverNewGameBtn">새 게임 시작하기</button>
+  </div>
+</div>
+
 <div class="wrap">
   <header>
     <h1>🕊️ 성령의 열매 스도쿠</h1>
@@ -796,7 +833,8 @@
       <span id="progressText">0 / 81 채움</span>
       <div class="stat-group">
         <span id="mistakeText">실수 0회</span>
-        <span id="hintText">힌트 0회</span>
+        <span id="hintText">힌트 0/3회</span>
+        <span id="undoText">되돌리기 0/9회</span>
         <span id="timer">00:00</span>
       </div>
     </div>
@@ -818,8 +856,11 @@
   </div>
 
   <div class="secondary">
-    <div class="best-row" id="bestRow"></div>
-    <div class="score-row" id="scoreRow">🍇 총점: 0점</div>
+    <div class="stats-row">
+      <span class="best-row" id="bestRow"></span>
+      <span class="divider">·</span>
+      <span class="score-row" id="scoreRow">🍇 총점: 0점</span>
+    </div>
     <div class="ranking-btn-row">
       <button class="ranking-btn" id="openRankingBtn">🏆 전체 랭킹 보기</button>
     </div>
@@ -849,9 +890,9 @@ const FRUITS = [
   { name: "사랑", emoji: "❤️", color: "#E63946",
     icon: '<path fill="currentColor" d="M50 95 C18 68 4 46 4 27 C4 9 19 -2 35 3 C43 5 48 13 50 21 C52 13 57 5 65 3 C81 -2 96 9 96 27 C96 46 82 68 50 95 Z"/>' },
   { name: "희락", emoji: "😊", color: "#F4A300",
-    icon: '<circle cx="50" cy="50" r="29" fill="currentColor"/><g stroke="currentColor" stroke-width="9" stroke-linecap="round"><line x1="50" y1="12" x2="50" y2="19"/><line x1="50" y1="81" x2="50" y2="88"/><line x1="12" y1="50" x2="19" y2="50"/><line x1="81" y1="50" x2="88" y2="50"/><line x1="23" y1="23" x2="28" y2="28"/><line x1="72" y1="72" x2="77" y2="77"/><line x1="77" y1="23" x2="72" y2="28"/><line x1="28" y1="72" x2="23" y2="77"/></g>' },
+    icon: '<circle cx="50" cy="50" r="33" fill="currentColor"/><g stroke="currentColor" stroke-width="9" stroke-linecap="round"><line x1="50" y1="16" x2="50" y2="21"/><line x1="50" y1="79" x2="50" y2="84"/><line x1="16" y1="50" x2="21" y2="50"/><line x1="79" y1="50" x2="84" y2="50"/><line x1="27" y1="27" x2="30.5" y2="30.5"/><line x1="69.5" y1="69.5" x2="73" y2="73"/><line x1="73" y1="27" x2="69.5" y2="30.5"/><line x1="30.5" y1="69.5" x2="27" y2="73"/></g>' },
   { name: "화평", emoji: "🕊️", color: "#4CC9F0",
-    icon: '<path fill="currentColor" d="M2 76 C24 28 43 58 50 34 C57 58 76 28 98 76 C76 52 60 68 50 46 C40 68 24 52 2 76 Z"/>' },
+    icon: '<circle cx="50" cy="50" r="46" fill="currentColor"/>' },
   { name: "참음", emoji: "☕", color: "#8B5A2B",
     icon: '<path fill="currentColor" fill-rule="evenodd" d="M50 3 C75 3 96 24 96 50 C96 76 75 97 50 97 C25 97 4 76 4 50 C4 24 25 3 50 3 Z M50 15 C55 29 43 40 50 50 C43 60 55 71 50 85 C45 71 57 60 50 50 C57 40 45 29 50 15 Z"/>' },
   { name: "자비", emoji: "🍊", color: "#FF8C42",
@@ -875,9 +916,12 @@ let selected = null;    // {r,c}
 let timerInterval = null;
 let seconds = 0;
 let gameWon = false;
+let gameOver = false;
 let mistakes = 0;
 let hintsUsed = 0;
 const MAX_HINTS = 3; // 게임당 힌트 사용 가능 횟수
+let undoUsed = 0;
+const MAX_UNDO = 9; // 게임당 되돌리기 사용 가능 횟수
 let notes = [];          // 9x9, 각 칸은 length-10 boolean 배열 (인덱스 1~9 사용)
 let memoMode = false;
 let autoCheck = true;
@@ -914,7 +958,7 @@ function toggleAutoCheck() {
 }
 
 function handleFruitClick(val) {
-  if (!selected || gameWon) return;
+  if (!selected || gameWon || gameOver) return;
   const { r, c } = selected;
   if (givenMask[r][c]) return;
   if (memoMode) {
@@ -1031,9 +1075,11 @@ function startDailyChallenge() {
   notes = emptyNotes();
 
   gameWon = false;
+  gameOver = false;
   selected = null;
   mistakes = 0;
   hintsUsed = 0;
+  undoUsed = 0;
   seconds = 0;
   history = [];
   updateUndoButtonState();
@@ -1060,11 +1106,11 @@ function exitDailyMode() {
 const SAVE_KEY = 'fruitSudokuSave';
 
 function saveGame() {
-  if (gameWon || dailyMode) return;
+  if (gameWon || gameOver || dailyMode) return;
   try {
     const data = {
       currentLevel, puzzle, solution, givenMask,
-      seconds, mistakes, hintsUsed, notes
+      seconds, mistakes, hintsUsed, undoUsed, notes
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
   } catch (e) { /* 저장 실패는 무시 (게임 진행에 영향 없음) */ }
@@ -1376,7 +1422,7 @@ function updateProgress() {
 
 // ---------- 상호작용 ----------
 function selectCell(r, c) {
-  if (gameWon) return;
+  if (gameWon || gameOver) return;
   if (givenMask[r][c]) {
     selected = { r, c };
     highlightSelection();
@@ -1400,26 +1446,39 @@ function pushHistory(r, c, wasMistake, wasHint) {
 }
 
 function undoMove() {
-  if (history.length === 0 || gameWon) return;
+  if (history.length === 0 || gameWon || gameOver) return;
+  if (undoUsed >= MAX_UNDO) return;
   const last = history.pop();
   puzzle[last.r][last.c] = last.prevValue;
   notes[last.r][last.c] = last.prevNotes;
   if (last.wasMistake) mistakes = Math.max(0, mistakes - 1);
   if (last.wasHint) hintsUsed = Math.max(0, hintsUsed - 1);
+  undoUsed++;
   updateStatText();
   renderBoard();
   saveGame();
   document.getElementById('fullBoardWarning').style.display = 'none';
   updateUndoButtonState();
+
+  if (undoUsed >= MAX_UNDO) {
+    triggerGameOver();
+  }
 }
 
 function updateUndoButtonState() {
   const btn = document.getElementById('undoBtn');
-  if (btn) btn.classList.toggle('disabled', history.length === 0);
+  if (btn) btn.classList.toggle('disabled', history.length === 0 || undoUsed >= MAX_UNDO || gameWon || gameOver);
+}
+
+function triggerGameOver() {
+  gameOver = true;
+  clearInterval(timerInterval);
+  clearSave();
+  document.getElementById('gameOverModal').classList.add('show');
 }
 
 function placeValue(val) {
-  if (!selected || gameWon) return;
+  if (!selected || gameWon || gameOver) return;
   const { r, c } = selected;
   if (givenMask[r][c]) return;
   let wasMistake = false;
@@ -1445,7 +1504,7 @@ function placeValue(val) {
 }
 
 function giveHint() {
-  if (gameWon) return;
+  if (gameWon || gameOver) return;
   if (hintsUsed >= MAX_HINTS) return;
   // "고쳐야 할 칸" = 처음부터 주어진 칸이 아니면서, 정답과 다른 칸(빈 칸 포함)
   function needsFix(r, c) {
@@ -1478,12 +1537,13 @@ function updateStatText() {
   mEl.textContent = `실수 ${mistakes}회`;
   mEl.classList.toggle('warn', mistakes > 0);
   document.getElementById('hintText').textContent = `힌트 ${hintsUsed}/${MAX_HINTS}회`;
+  document.getElementById('undoText').textContent = `되돌리기 ${undoUsed}/${MAX_UNDO}회`;
   updateHintButtonState();
 }
 
 function updateHintButtonState() {
   const btn = document.getElementById('hintBtn');
-  if (btn) btn.classList.toggle('disabled', hintsUsed >= MAX_HINTS || gameWon);
+  if (btn) btn.classList.toggle('disabled', hintsUsed >= MAX_HINTS || gameWon || gameOver);
 }
 
 function checkWin() {
@@ -1559,6 +1619,7 @@ function updateTimerDisplay() {
 let currentLevel = 'medium';
 
 function newGame(level) {
+  document.getElementById('gameOverModal').classList.remove('show');
   if (dailyMode) {
     dailyMode = false;
     document.getElementById('dailyBanner').style.display = 'none';
@@ -1569,9 +1630,11 @@ function newGame(level) {
     b.classList.toggle('active', b.dataset.level === currentLevel);
   });
   gameWon = false;
+  gameOver = false;
   selected = null;
   mistakes = 0;
   hintsUsed = 0;
+  undoUsed = 0;
   seconds = 0;
   history = [];
   updateUndoButtonState();
@@ -1598,9 +1661,11 @@ function resumeGame(data) {
     b.classList.toggle('active', b.dataset.level === currentLevel);
   });
   gameWon = false;
+  gameOver = false;
   selected = null;
   mistakes = data.mistakes || 0;
   hintsUsed = data.hintsUsed || 0;
+  undoUsed = data.undoUsed || 0;
   seconds = data.seconds || 0;
   history = [];
   updateUndoButtonState();
@@ -1628,6 +1693,7 @@ document.getElementById('exitDailyLink').addEventListener('click', (e) => {
   e.preventDefault();
   exitDailyMode();
 });
+document.getElementById('gameOverNewGameBtn').addEventListener('click', () => newGame());
 
 // ---------- 설정 모달 ----------
 const settingsModal = document.getElementById('settingsModal');
