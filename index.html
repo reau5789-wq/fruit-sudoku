@@ -6,7 +6,85 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#7a2e12">
 <link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="열매스도쿠">
+<meta name="format-detection" content="telephone=no">
+<!-- ===== 아이폰(iOS) 지원: 홈 화면 추가 안내 + 소리 잠금 해제 ===== -->
+<style>
+  #ios-install-tip {
+    position: fixed; left: 12px; right: 12px; bottom: 16px; z-index: 99999;
+    max-width: 440px; margin: 0 auto;
+    background: #ffffff; color: #222; border-radius: 16px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.35);
+    padding: 16px 16px 14px; font-size: 15px; line-height: 1.55;
+    font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
+    display: none;
+  }
+  #ios-install-tip b { color: #7a2e12; }
+  #ios-install-tip .ios-close {
+    position: absolute; top: 6px; right: 8px; border: 0; background: none;
+    font-size: 22px; color: #888; padding: 4px 8px; cursor: pointer;
+  }
+  #ios-install-tip .ios-share {
+    display: inline-block; vertical-align: -3px; width: 18px; height: 18px;
+  }
+  #ios-install-tip .ios-note { font-size: 12.5px; color: #777; margin-top: 6px; }
+</style>
+<script>
+(function () {
+  var ua = navigator.userAgent || "";
+  var isIOS = /iPhone|iPad|iPod/.test(ua) ||
+              (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (!isIOS) return;
+
+  // 1) 소리 잠금 해제: 아이폰은 첫 터치 때 오디오를 깨워야 효과음이 납니다.
+  var _AC = window.AudioContext || window.webkitAudioContext;
+  if (_AC && !_AC.__iosPatched) {
+    var contexts = [];
+    var Patched = function () { var c = new _AC(); contexts.push(c); return c; };
+    Patched.prototype = _AC.prototype;
+    Patched.__iosPatched = true;
+    window.AudioContext = Patched;
+    if (window.webkitAudioContext) window.webkitAudioContext = Patched;
+    var unlock = function () {
+      contexts.forEach(function (c) {
+        if (c.state !== "running") { try { c.resume(); } catch (e) {} }
+      });
+    };
+    ["touchstart", "touchend", "click"].forEach(function (ev) {
+      document.addEventListener(ev, unlock, { passive: true, capture: true });
+    });
+  }
+
+  // 2) 홈 화면 추가 안내 (이미 설치해서 실행 중이면 표시 안 함)
+  var standalone = window.navigator.standalone === true ||
+                   (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+  if (standalone) return;
+  var KEY = "fruitSudoku_iosTipDismissed";
+  var dismissedAt = 0;
+  try { dismissedAt = Number(localStorage.getItem(KEY)) || 0; } catch (e) {}
+  // 닫으면 7일 동안 다시 보이지 않음
+  if (Date.now() - dismissedAt < 7 * 24 * 60 * 60 * 1000) return;
+
+  function show() {
+    var tip = document.getElementById("ios-install-tip");
+    if (!tip) return;
+    tip.style.display = "block";
+    tip.querySelector(".ios-close").addEventListener("click", function () {
+      tip.style.display = "none";
+      try { localStorage.setItem(KEY, String(Date.now())); } catch (e) {}
+    });
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () { setTimeout(show, 2500); });
+  } else { setTimeout(show, 2500); }
+})();
+</script>
+<!-- ===== /아이폰 지원 ===== -->
+
 <title>성령의 열매 스도쿠</title>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
@@ -2059,5 +2137,15 @@ if (savedGame) {
   });
 })();
 </script>
+<!-- 아이폰 설치 안내 배너 -->
+<div id="ios-install-tip" role="dialog" aria-label="아이폰 설치 안내">
+  <button class="ios-close" aria-label="닫기">×</button>
+  <div>📱 <b>아이폰에서 앱처럼 설치하기</b></div>
+  <div>① 아래쪽 <b>공유 버튼</b>
+    <svg class="ios-share" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 11v9h14v-9"/></svg>
+    을 누르고</div>
+  <div>② <b>'홈 화면에 추가'</b>를 선택하세요.</div>
+  <div class="ios-note">🔔 소리가 안 나면 아이폰 옆면의 무음 스위치를 꺼 주세요.</div>
+</div>
 </body>
 </html>
